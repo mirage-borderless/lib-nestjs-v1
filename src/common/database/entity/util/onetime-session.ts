@@ -1,5 +1,5 @@
-import { IdentityUser }                               from '@app/libs-core/common/auth/conf/database/entity/identity-user.entity'
-import { UUIDBaseEntity }                             from '@app/libs-core/common/database/entity/uuid.base-entity'
+import { IdentityUser }                               from 'src/common/auth/conf/database/entity/identity-user.entity'
+import { UUIDBaseEntity }                             from 'src/common/database/entity/uuid.base-entity'
 import { BeforeInsert, BeforeUpdate, Column, Entity } from 'typeorm'
 
 export namespace OnetimeSession {

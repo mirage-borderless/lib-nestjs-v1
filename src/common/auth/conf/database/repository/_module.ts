@@ -1,4 +1,4 @@
-import { IdentityUser }                      from '@app/libs-core/common/auth/conf/database/entity/identity-user.entity'
+import { IdentityUser }                      from 'src/common/auth/conf/database/entity/identity-user.entity'
 import { DynamicModule, Module, Provider }   from '@nestjs/common'
 import { getRepositoryToken, TypeOrmModule } from '@nestjs/typeorm'
 import { EntityClassOrSchema }               from '@nestjs/typeorm/dist/interfaces/entity-class-or-schema.type'

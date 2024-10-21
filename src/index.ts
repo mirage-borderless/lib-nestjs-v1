@@ -2,13 +2,12 @@ import { DatabaseType }           from 'typeorm'
 import { IdentityUser }           from './common/auth/conf/database/entity/identity-user.entity'
 import * as nest                  from '@nestjs/core'
 import * as fastify               from 'fastify'
-import { Observable }             from 'rxjs'
 import type { DataSourceOptions } from 'typeorm'
 import type { Driver }            from 'typeorm/driver/Driver'
 
 export * from './http/fastify-mvc'
-export * from '@fastify/view/types'
-export * from '@fastify/cookie'
+import * as fView   from '@fastify/view/types'
+import * as fCookie from '@fastify/cookie'
 
 type RouteOptions = {
   name: string,

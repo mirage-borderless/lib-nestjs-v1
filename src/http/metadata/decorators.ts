@@ -1,4 +1,4 @@
-import { IdentityUser }                                                          from '@app/libs-core/common/auth/conf/database/entity/identity-user.entity'
+import { IdentityUser }                                                          from 'src/common/auth/conf/database/entity/identity-user.entity'
 import { createParamDecorator, ExecutionContext, NotImplementedException, Type } from '@nestjs/common'
 
 import { Reflector }             from '@nestjs/core'

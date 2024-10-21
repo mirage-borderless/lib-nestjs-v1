@@ -1,5 +1,5 @@
-import { IdentityUser } from '@app/libs-core/common/auth/conf/database/entity/identity-user.entity'
-import { Toast }        from '@app/libs-core/common/notify/toast/model'
+import { IdentityUser } from 'src/common/auth/conf/database/entity/identity-user.entity'
+import { Toast }        from 'src/common/notify/toast/model'
 import { Injectable }   from '@nestjs/common'
 import { Subject }      from 'rxjs'
 

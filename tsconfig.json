@@ -15,10 +15,7 @@
     "baseUrl": "./",
     "declaration": true,
     "moduleResolution": "node",
-    "paths": {
-      "@app/libs-core":   ["src"],
-      "@app/libs-core/*": ["src/*"]
-    }
+    "module": "CommonJS"
   },
   "lib": ["decorators","dom","scripthost","ES2023"],
   "include": ["src/**/*"],
