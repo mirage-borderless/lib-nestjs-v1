@@ -20,4 +20,4 @@ jobs:
       - name: Publish package
         env:
           NODE_AUTH_TOKEN: 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
-        run: npm publish --access public
+        run: npm publish

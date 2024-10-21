@@ -10,8 +10,7 @@
     "node": ">=20"
   },
   "scripts": {
-    "build": "nest build",
-    "prepublishOnly": "npm i && npm run build"
+    "build": "nest build"
   },
   "resolutions": {
     "jackspeak": "2.1.1"
