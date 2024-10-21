@@ -19,5 +19,5 @@ jobs:
         run: yarn build
       - name: Publish package
         env:
-          NODE_AUTH_TOKEN: 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
+          NODE_AUTH_TOKEN: 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
         run: npm publish
