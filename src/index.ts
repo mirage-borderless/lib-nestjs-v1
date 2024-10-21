@@ -5,7 +5,9 @@ import * as fastify               from 'fastify'
 import type { DataSourceOptions } from 'typeorm'
 import type { Driver }            from 'typeorm/driver/Driver'
 
-export * from './http/fastify-mvc'
+export * from './http'
+export * from './util'
+export * from './common'
 
 type RouteOptions = {
   name: string,

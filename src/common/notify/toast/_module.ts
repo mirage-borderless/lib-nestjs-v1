@@ -1,4 +1,4 @@
-import { ToastService } from '../../../common/notify/toast/toast.service'
+import { ToastService } from './toast.service'
 import { Module }       from '@nestjs/common'
 
 @Module({
