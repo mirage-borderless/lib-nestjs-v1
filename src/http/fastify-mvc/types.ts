@@ -1,6 +1,7 @@
+import { FastifyCookie }          from '@fastify/cookie';
+import { NestFastifyApplication } from '@nestjs/platform-fastify'
 import { IdentityUser }           from '../../common/auth/conf/database/entity/identity-user.entity'
 import { Toast }                  from '../../common/notify/toast/model'
-import { NestFastifyApplication } from '@nestjs/platform-fastify'
 
 type setValidatorErrors = (this: FastifyReply, error: Record<any, any>, form?: Record<any, any>) => FastifyReply
 type formFieldError     = (this: FastifyReply, field: string, error: Record<any, any>, form?: Record<any, any>) => FastifyReply
@@ -10,7 +11,7 @@ type backend            = ()                                      => NestFastify
 type withNotification   = (this: FastifyReply, toast: Toast)      => FastifyReply
 
 declare module 'fastify' {
-  export interface FastifyReply {
+  interface FastifyReply {
     locals: {
       styles?:       string[]
       scripts?:      string[]
@@ -32,7 +33,7 @@ declare module 'fastify' {
     [key: string | symbol]: (this: FastifyReply, ...args: any[]) => FastifyReply
   }
 
-  interface FastifyRequest {
+  interface FastifyRequest extends FastifyCookie {
     user:            JwtUserSign
     isAuthenticated: boolean
     backend:         backend

@@ -15,9 +15,14 @@
     "baseUrl": "./",
     "declaration": true,
     "moduleResolution": "node",
-    "module": "CommonJS",
+    "module": "commonjs"
   },
   "lib": ["decorators","dom","scripthost","ES2023"],
-  "include": ["src/**/*"],
+  "include": [
+    "src/**/*",
+    "node_modules/@fastify/cookie/types/plugin",
+    "node_modules/@fastify/view/types/index",
+    "node_modules/fastify-plugin/types/plugin.d.ts"
+  ],
   "exclude": ["node_modules", "dist", "test", "**/*spec.ts"]
 }

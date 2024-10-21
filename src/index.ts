@@ -6,8 +6,6 @@ import type { DataSourceOptions } from 'typeorm'
 import type { Driver }            from 'typeorm/driver/Driver'
 
 export * from './http/fastify-mvc'
-import * as fView   from '@fastify/view/types'
-import * as fCookie from '@fastify/cookie'
 
 type RouteOptions = {
   name: string,
