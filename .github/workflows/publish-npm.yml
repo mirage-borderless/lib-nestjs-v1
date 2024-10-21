@@ -2,7 +2,7 @@ name: Npm publish library
 on:
   push:
     branches:
-      - main
+      - master
 jobs:
   publish:
     runs-on: ubuntu-latest
