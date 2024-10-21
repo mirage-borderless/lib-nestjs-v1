@@ -1,4 +1,4 @@
-import { UUIDBaseEntity } from 'src/common/database/entity/uuid.base-entity'
+import { UUIDBaseEntity } from '../../../../database/entity/uuid.base-entity'
 import { Column, Entity } from 'typeorm'
 
 /**

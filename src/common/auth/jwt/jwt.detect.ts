@@ -1,7 +1,7 @@
 import { CanActivate, ExecutionContext, forwardRef, Inject, Injectable, UnauthorizedException } from '@nestjs/common'
 import { IdentityUser }                                                                         from '../conf/database/entity/identity-user.entity'
 import { CommonAuthJwtService }                                                                 from './jwt.service'
-import { ToastService }                                                                         from 'src/common/notify/toast/toast.service'
+import { ToastService }                                                                         from '../../notify/toast/toast.service'
 
 @Injectable()
 export class CommonJwtAutoDetect<T extends IdentityUser.Model = IdentityUser.Model> implements CanActivate {

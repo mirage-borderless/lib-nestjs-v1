@@ -13,10 +13,6 @@ jobs:
         with:
           node-version: '20'
           registry-url: 'https://registry.npmjs.org/'
-      - name: Install dependencies
-        run: yarn install
-      - name: Build application
-        run: yarn build
       - name: Publish package
         env:
           NODE_AUTH_TOKEN: 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

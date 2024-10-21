@@ -15,7 +15,7 @@
     "baseUrl": "./",
     "declaration": true,
     "moduleResolution": "node",
-    "module": "CommonJS"
+    "module": "CommonJS",
   },
   "lib": ["decorators","dom","scripthost","ES2023"],
   "include": ["src/**/*"],

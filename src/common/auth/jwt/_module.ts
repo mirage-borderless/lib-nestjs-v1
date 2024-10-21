@@ -3,7 +3,7 @@ import { CommonAuthRepositoryModule } from '../conf/database/repository/_module'
 import { CommonJwtAutoDetect }        from './jwt.detect'
 import { CommonAuthJwtGuard }         from './jwt.guard'
 import { CommonAuthJwtService }       from './jwt.service'
-import { ToastModule }                from 'src/common/notify/toast/_module'
+import { ToastModule }                from '../../notify/toast/_module'
 
 const MODULES = [
   CommonAuthRepositoryModule,

@@ -1,6 +1,6 @@
+import { IdentityUser }           from '../../common/auth/conf/database/entity/identity-user.entity'
+import { Toast }                  from '../../common/notify/toast/model'
 import { NestFastifyApplication } from '@nestjs/platform-fastify'
-import { IdentityUser }           from 'src/common/auth/conf/database/entity/identity-user.entity'
-import { Toast }                  from 'src/common/notify/toast/model'
 
 type setValidatorErrors = (this: FastifyReply, error: Record<any, any>, form?: Record<any, any>) => FastifyReply
 type formFieldError     = (this: FastifyReply, field: string, error: Record<any, any>, form?: Record<any, any>) => FastifyReply
