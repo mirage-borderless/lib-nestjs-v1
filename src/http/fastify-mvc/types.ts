@@ -1,4 +1,5 @@
 import { FastifyCookie }          from '@fastify/cookie';
+import { FastifyViewOptions }     from '@fastify/view'
 import { NestFastifyApplication } from '@nestjs/platform-fastify'
 import { IdentityUser }           from '../../common/auth/conf/database/entity/identity-user.entity'
 import { Toast }                  from '../../common/notify/toast/model'
@@ -11,7 +12,7 @@ type backend            = ()                                      => NestFastify
 type withNotification   = (this: FastifyReply, toast: Toast)      => FastifyReply
 
 declare module 'fastify' {
-  interface FastifyReply {
+  interface FastifyReply extends FastifyViewOptions {
     locals: {
       styles?:       string[]
       scripts?:      string[]
