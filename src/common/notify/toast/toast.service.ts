@@ -18,7 +18,7 @@ export class ToastService {
     if (!this.channel$.has(idToken)) {
       this.addClient(idToken)
     }
-    setTimeout(() => this.channel$.get(idToken).next(payload), 0)
+    setTimeout(() => this.channel$.get(idToken).next(payload), 500)
   }
 
   public sendToClientOneTime(idToken: IdentityUser.TokenId, payload: Toast) {
@@ -28,7 +28,7 @@ export class ToastService {
     setTimeout(() => {
       this.channel$.get(idToken).next(payload)
       this.channel$.delete(idToken)
-    }, 0)
+    }, 500)
   }
 
   /**
