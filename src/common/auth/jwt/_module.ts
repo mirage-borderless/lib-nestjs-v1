@@ -1,5 +1,5 @@
 import { Module }                     from '@nestjs/common'
-import { CommonAuthRepositoryModule } from '../conf/database/repository/_module'
+import { CommonAuthRepositoryModule } from '../conf/database/service/_module'
 import { CommonJwtAutoDetect }        from './jwt.detect'
 import { CommonAuthJwtGuard }         from './jwt.guard'
 import { CommonAuthJwtService }       from './jwt.service'

@@ -3,7 +3,7 @@ import { Repository }   from 'typeorm'
 import { IdentityUser } from '../entity/identity-user.entity'
 
 @Injectable()
-export class IdentityUserRepository<T extends IdentityUser.Model = IdentityUser.Model> {
+export class IdentityUserService<T extends IdentityUser.Model = IdentityUser.Model> {
   
   constructor(private readonly _repository: Repository<T>) {}
 

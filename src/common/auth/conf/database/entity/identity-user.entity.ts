@@ -10,7 +10,7 @@ export namespace IdentityUser {
   export type  TokenId = string & { readonly __brand: unique symbol }
 
   export type JwtSign<T extends IdentityUser.Model = IdentityUser.Model> = {
-    userid:   IdentityUser.Id
+    id:       IdentityUser.Id
     username: string
     password: string
     exp:      number

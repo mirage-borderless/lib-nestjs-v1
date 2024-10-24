@@ -31,7 +31,7 @@ declare module 'fastify' {
     buildViewValue:     buildViewValue
     viewAsHtml:         viewAsHtml
     withNotification:   withNotification
-    [key: string | symbol]: (this: FastifyReply, ...args: any[]) => FastifyReply
+    [method: string | symbol]: (this: FastifyReply, ...args: any[]) => FastifyReply
   }
 
   interface FastifyRequest extends FastifyCookie {

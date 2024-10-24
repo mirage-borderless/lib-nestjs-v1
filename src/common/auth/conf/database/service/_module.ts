@@ -1,9 +1,9 @@
-import { IdentityUser }                      from '../entity/identity-user.entity'
 import { DynamicModule, Module, Provider }   from '@nestjs/common'
 import { getRepositoryToken, TypeOrmModule } from '@nestjs/typeorm'
 import { EntityClassOrSchema }               from '@nestjs/typeorm/dist/interfaces/entity-class-or-schema.type'
+import { IdentityUserService }               from './identity-user.service'
 import { Repository }                        from 'typeorm'
-import { IdentityUserRepository }            from './identity-user.repository'
+import { IdentityUser }                      from '../entity/identity-user.entity'
 
 @Module({})
 export class CommonAuthRepositoryModule {
@@ -15,9 +15,9 @@ export class CommonAuthRepositoryModule {
       TypeOrmModule.forFeature([options.entity], options.dsn ?? 'slave')
     ]
     const PROVIDERS: Provider[] = [{
-      provide:    IdentityUserRepository<T>,
+      provide:    IdentityUserService<T>,
       inject:     [getRepositoryToken(options.entity, options.dsn ?? 'slave')],
-      useFactory: (repository: Repository<T>) => new IdentityUserRepository<T>(repository)
+      useFactory: (repository: Repository<T>) => new IdentityUserService<T>(repository)
     }]
 
     return {

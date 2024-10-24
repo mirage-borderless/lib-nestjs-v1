@@ -4,14 +4,14 @@ import { sprintf }                                  from 'sprintf-js'
 import { hash }                                     from 'typeorm/util/StringUtils'
 import { v4 as uuidv4 }                             from 'uuid'
 import { IdentityUser }                             from '../conf/database/entity/identity-user.entity'
-import { IdentityUserRepository }                   from '../conf/database/repository/identity-user.repository'
+import { IdentityUserService }                      from '../conf/database/service/identity-user.service'
 import { CommonJwtAutoDetect }                      from './jwt.detect'
 
 @Injectable({ scope: Scope.REQUEST })
 export class CommonAuthJwtService<T extends IdentityUser.Model = IdentityUser.Model> {
 
   constructor(
-    protected readonly identityRepo: IdentityUserRepository<T>,
+    protected readonly identityRepo: IdentityUserService<T>,
   ) {}
 
   private async authenticate(claim: T | { [K in keyof IdentityUser.Model]?: any }) {
@@ -43,7 +43,7 @@ export class CommonAuthJwtService<T extends IdentityUser.Model = IdentityUser.Mo
     }
     const verify: JwtUserSign<T> = {
       ...payload,
-      userid:  identityUser.id as IdentityUser.Id,
+      id:      identityUser.id as IdentityUser.Id,
       idToken: uuidv4()        as IdentityUser.TokenId,
       detail:  identityUser
     }

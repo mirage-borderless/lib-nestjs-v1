@@ -10,9 +10,9 @@ export class CommonJwtAutoDetect<T extends IdentityUser.Model = IdentityUser.Mod
   public static readonly HEADER_VIA_AUTHORIZATION = 'Authorization'
 
   constructor(
-    @Inject(forwardRef(() =>      CommonAuthJwtService<T>))
-    private readonly jwtService:  CommonAuthJwtService<T>,
-    private readonly toastSerive: ToastService
+    @Inject(forwardRef(() =>       CommonAuthJwtService<T>))
+    private readonly jwtService:   CommonAuthJwtService<T>,
+    private readonly toastService: ToastService
   ) {}
 
   canActivate(context: ExecutionContext) {
@@ -22,7 +22,7 @@ export class CommonJwtAutoDetect<T extends IdentityUser.Model = IdentityUser.Mod
     if (!!authorization) {
       return this.jwtService.decode(authorization).then(async (jwt: JwtUserSign<T>) => {
         if (Date.now() > jwt.exp) {
-          this.toastSerive.removeClient(jwt.idToken)
+          this.toastService.removeClient(jwt.idToken)
           response.clearCookie(CommonJwtAutoDetect.COOKIE_VIA_AUTHORIZATION)
           throw new UnauthorizedException('Yêu cầu đăng nhập lại')
         }

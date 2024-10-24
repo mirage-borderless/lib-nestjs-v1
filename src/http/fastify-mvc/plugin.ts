@@ -1,11 +1,11 @@
-import { Toast }                               from '../../common/notify/toast/model'
-import { ToastService }                        from '../../common/notify/toast/toast.service'
-import { PageTitle, Stepper, UseCss, UseJs }   from '../metadata/decorators'
 import { RENDER_METADATA }                     from '@nestjs/common/constants'
 import { Reflector }                           from '@nestjs/core'
 import { NestFastifyApplication }              from '@nestjs/platform-fastify'
 import { FastifyInstance, FastifyPluginAsync } from 'fastify'
 import fp                                      from 'fastify-plugin'
+import { Toast }                               from '../../common/notify/toast/model'
+import { ToastService }                        from '../../common/notify/toast/toast.service'
+import { PageTitle, Stepper, UseCss, UseJs }   from '../metadata/decorators'
 
 const register = fp
 
