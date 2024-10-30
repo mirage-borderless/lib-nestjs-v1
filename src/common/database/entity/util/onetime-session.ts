@@ -58,7 +58,7 @@ export namespace OnetimeSession {
   export interface Content {
     userid:        IdentityUser.Id,
     username:      string,
-    idToken:       IdentityUser.TokenId,
+    idToken:       IdentityUser.IdToken,
     [key: string]: any
   }
 }

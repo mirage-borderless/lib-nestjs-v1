@@ -21,7 +21,7 @@ declare module 'fastify' {
       isMobile?:     boolean
       flash?:        { message: string | object | [], type: 'error' | 'warning' | 'info' }
       validators?:   Validators
-      idToken?:      IdentityUser.TokenId
+      idToken?:      IdentityUser.IdToken
       request?:      FastifyRequest
       stepper?:      { index: number, steps: string[] }
       [key: string]: any

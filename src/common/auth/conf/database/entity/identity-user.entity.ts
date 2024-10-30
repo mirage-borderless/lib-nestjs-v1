@@ -7,14 +7,14 @@ import { Column, Entity } from 'typeorm'
 export namespace IdentityUser {
   export type  Id      = string & { readonly __brand: unique symbol }
   export const Id      = (id: string) => id as Id
-  export type  TokenId = string & { readonly __brand: unique symbol }
+  export type  IdToken = string & { readonly __brand: unique symbol }
 
   export type JwtSign<T extends IdentityUser.Model = IdentityUser.Model> = {
     id:       IdentityUser.Id
     username: string
     password: string
     exp:      number
-    idToken:  IdentityUser.TokenId
+    idToken:  IdentityUser.IdToken
     detail:   T
   }
 

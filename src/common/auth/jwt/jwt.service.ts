@@ -1,4 +1,5 @@
 import { Injectable, Scope, UnauthorizedException } from '@nestjs/common'
+import { I18nService }                              from 'nestjs-i18n'
 import { JWE, JWK, parse }                          from 'node-jose'
 import { sprintf }                                  from 'sprintf-js'
 import { hash }                                     from 'typeorm/util/StringUtils'
@@ -11,7 +12,8 @@ import { CommonJwtAutoDetect }                      from './jwt.detect'
 export class CommonAuthJwtService<T extends IdentityUser.Model = IdentityUser.Model> {
 
   constructor(
-    protected readonly identityRepo: IdentityUserService<T>,
+    private readonly identityRepo: IdentityUserService<T>,
+    private readonly i18nService:  I18nService
   ) {}
 
   private async authenticate(claim: T | { [K in keyof IdentityUser.Model]?: any }) {
@@ -21,7 +23,10 @@ export class CommonAuthJwtService<T extends IdentityUser.Model = IdentityUser.Mo
         values$: claim,
         errors: {
           username: {
-            invalid: sprintf('Tai khoan %s khong ton tai', claim.username)
+            invalid: this.i18nService.translate(
+              'common.auth.username.not_exist',
+              { args: { username: claim.username } }
+            )
           }
         }
       }
@@ -36,7 +41,10 @@ export class CommonAuthJwtService<T extends IdentityUser.Model = IdentityUser.Mo
       const validators: Validators = {
         values$: claim,
         errors: {
-          password: { invalid : 'Mật khẩu không chính xác' }
+          password: { invalid : this.i18nService.translate(
+              'common.auth.password.wrong'
+            )
+          }
         }
       }
       throw new UnauthorizedException(validators)
@@ -44,7 +52,7 @@ export class CommonAuthJwtService<T extends IdentityUser.Model = IdentityUser.Mo
     const verify: JwtUserSign<T> = {
       ...payload,
       id:      identityUser.id as IdentityUser.Id,
-      idToken: uuidv4()        as IdentityUser.TokenId,
+      idToken: uuidv4()        as IdentityUser.IdToken,
       detail:  identityUser
     }
     return {
