@@ -3,9 +3,9 @@ import { Reflector }                           from '@nestjs/core'
 import { NestFastifyApplication }              from '@nestjs/platform-fastify'
 import { FastifyInstance, FastifyPluginAsync } from 'fastify'
 import fp                                      from 'fastify-plugin'
-import { Toast }                               from '../../common/notify/toast/model'
-import { ToastService }                        from '../../common/notify/toast/toast.service'
-import { PageTitle, Stepper, UseCss, UseJs }   from '../metadata/decorators'
+import { Toast }                               from '../../common'
+import { ToastService }                        from '../../common'
+import { PageTitle, Stepper, UseCss, UseJs }   from '../metadata'
 
 const register = fp
 

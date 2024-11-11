@@ -1,4 +1,4 @@
-import { DefaultBaseEntity }      from '../../database/entity/default.base-entity'
+import { DefaultBaseEntity }      from './default.base-entity'
 import { PrimaryGeneratedColumn } from 'typeorm'
 
 export class IncrementBaseEntity<T> extends DefaultBaseEntity {
