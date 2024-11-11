@@ -1,4 +1,4 @@
-import type { ConfigService }                          from '@nestjs/config'
+import { ConfigService }                               from '@nestjs/config'
 import { TypeOrmModuleOptions, TypeOrmOptionsFactory } from '@nestjs/typeorm'
 import { EntitySchema }                                from 'typeorm'
 

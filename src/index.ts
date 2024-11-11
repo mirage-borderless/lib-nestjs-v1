@@ -2,8 +2,8 @@ import { DatabaseType }           from 'typeorm'
 import { IdentityUser }           from './common/auth/conf/database/entity/identity-user.entity'
 import * as nest                  from '@nestjs/core'
 import * as fastify               from 'fastify'
-import type { DataSourceOptions } from 'typeorm'
-import type { Driver }            from 'typeorm/driver/Driver'
+import { DataSourceOptions }      from 'typeorm'
+import { Driver }                 from 'typeorm/driver/Driver'
 
 export * from './http'
 export * from './util'
@@ -39,12 +39,9 @@ declare global {
       password?: string
       options?:  DataSourceOptions
     }
-  }
-  type DbConfigInstance = {
-    [db_name: string]: {
+    [db_name: string & { readonly __brand: unique symbol }]: {
       options?: DataSourceOptions
     }
   }
-  type DatabaseSetting = DbConfigHostSpec & DbConfigInstance
-  type DatabaseServer  = Record<DatabaseType, DatabaseSetting>
+  type DatabaseServer = Record<DatabaseType, DbConfigHostSpec>
 }

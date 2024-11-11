@@ -1,16 +1,15 @@
 import { TypeOrmModuleOptions, TypeOrmOptionsFactory } from '@nestjs/typeorm'
-import { EntitySchema }                                from 'typeorm'
-import { MixedList }                                   from 'typeorm/common/MixedList'
 
 export class DatabaseMssqlConnector implements TypeOrmOptionsFactory {
 
   constructor(
-    private readonly dbName:   string,
-    private readonly entities: MixedList<Function | string | EntitySchema>,
-    private readonly config:   DatabaseSetting
+    private readonly dbName: string,
+    private readonly config: DbConfigHostSpec
   ) {}
 
   createTypeOrmOptions(dsn: 'slave' | 'master' = 'master'): TypeOrmModuleOptions | Promise<TypeOrmModuleOptions> {
+    const options  = this.config[this.dbName]?.options || {}
+    const entities = options.entities || []
     return {
       name:                      dsn === 'master' ? undefined : dsn,
       type:                      'mssql',
@@ -19,7 +18,7 @@ export class DatabaseMssqlConnector implements TypeOrmOptionsFactory {
       port:                      this.config.host_spec.port,
       host:                      this.config.host_spec.host,
       database:                  this.dbName,
-      entities:                  this.entities,
+      entities:                  entities,
       synchronize:               dsn === 'master',
       logging:                   ['error', 'query', 'log'],
       cache:                     false,
@@ -28,8 +27,9 @@ export class DatabaseMssqlConnector implements TypeOrmOptionsFactory {
       retryAttempts:             1,
       verboseRetryLog:           true,
       options:                   {
+        ...options,
         readOnlyIntent:         dsn === 'slave',
-        trustServerCertificate: true
+        trustServerCertificate: true,
       }
     }
   }
