@@ -31,9 +31,6 @@ function detectCtor<T>(ctx: ExecutionContext, f: Function): Type<T> {
   const paramTypes = Reflect.getMetadata('design:paramtypes', mirror, handler.name) || []
   const args       = Reflect.getMetadata(ROUTE_ARGS_METADATA, mirror.constructor, handler.name) || {};
   const [_, meta]  = Object.entries(args).find(([_, meta]) => meta['factory'] == f)
-  if (!meta || !meta['index']) {
-    throw new Error('method detectCtor error')
-  }
   const index      = meta['index']
   return paramTypes[index] as Type<T>
 }
