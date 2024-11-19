@@ -1,3 +1,4 @@
+import { FunctionStatic }                                                        from 'src/util'
 import { IdentityUser }                                                          from '../../common'
 import { createParamDecorator, ExecutionContext, NotImplementedException, Type } from '@nestjs/common'
 
@@ -17,6 +18,7 @@ export const User = createParamDecorator(
   <T extends IdentityUser.Model = IdentityUser.Model>(ctor: Type<T>, ctx: ExecutionContext) => {
     const request = ctx.switchToHttp().getRequest<FastifyRequest>()
     if (!request.user) throw new NotImplementedException('Not found attribute key user from request context, please login first, corrupted...')
+    request.user.detail = plainToInstance(ctor, request.user.detail)
     return request.user
   }
 )
@@ -46,5 +48,35 @@ export const FormBody = createParamDecorator(
       response.setValidatorErrors(null)
     }
     return formBody
+  }
+)
+
+/**
+ * Lấy value từ cookie
+ * */
+export const CookieValue = createParamDecorator(
+  async <T>(option: { key: string, ctor: Type<T>, decrypted?: boolean }, ctx: ExecutionContext) => {
+    const request = ctx.switchToHttp().getRequest<FastifyRequest>()
+    const raw     = request.cookies[option.key] || ''
+    if (!raw || raw.trim() === '') { return null }
+
+    const handler        = ctx.getHandler()
+    const classPrototype = ctx.getClass().prototype
+    const paramTypes     = Reflect.getMetadata('design:paramtypes', classPrototype, handler.name)
+    console.log('paramTypes', paramTypes)
+    const propertyKeys = ["cart"]
+    console.log('propertyKeys', propertyKeys)
+    const propertyKey  = propertyKeys.find(key => Reflect.getMetadata('CookieValue', handler))
+    console.log('propertyKey', propertyKey)
+    console.log('propertyKey2', Reflect.getMetadata('CookieValue', handler))
+    console.log('propertyKey32', Reflect.getMetadataKeys(handler))
+    const propertyType = Reflect.getMetadata("design:type", classPrototype, propertyKey)
+    console.log('propertyType', propertyType)
+
+    if (!option.decrypted) {
+      return await FunctionStatic.decrypt(raw).then(value =>
+        plainToInstance(option.ctor, JSON.parse(value)))
+    }
+    return plainToInstance(option.ctor, JSON.parse(raw))
   }
 )

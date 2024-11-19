@@ -14,7 +14,7 @@ export class FunctionStatic {
   }
 
   static  async encrypt(
-    raw:         object,
+    raw:         any,
     format:      "general" | "compact" | "flattened" | undefined = 'compact',
     contentAlg = "A256GCM",
     alg        = "RSA-OAEP"
