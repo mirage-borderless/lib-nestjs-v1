@@ -23,7 +23,7 @@ declare global {
     errors?: { [K in keyof Validators['values$']]: { [type: string]: string } } | string
   }
 
-  interface FormBase extends Record<any, any> {
+  interface FormBase {
     isValid?: boolean
   }
 

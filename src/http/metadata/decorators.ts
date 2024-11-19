@@ -1,3 +1,5 @@
+import { ROUTE_ARGS_METADATA }                                                   from '@nestjs/common/constants';
+import { ClassConstructor }                                                      from 'class-transformer/types/interfaces/class-constructor.type';
 import { FunctionStatic }                                                        from 'src/util'
 import { IdentityUser }                                                          from '../../common'
 import { createParamDecorator, ExecutionContext, NotImplementedException, Type } from '@nestjs/common'
@@ -23,60 +25,63 @@ export const User = createParamDecorator(
   }
 )
 
+function detectCtor<T>(ctx: ExecutionContext, f: Function): Type<T> {
+  const handler    = ctx.getHandler()
+  const mirror     = ctx.getClass().prototype
+  const paramTypes = Reflect.getMetadata('design:paramtypes', mirror, handler.name) || []
+  const args       = Reflect.getMetadata(ROUTE_ARGS_METADATA, mirror.constructor, handler.name) || {};
+  const [_, meta]  = Object.entries(args).find(([_, meta]) => meta['factory'] == f)
+  if (!meta || !meta['index']) {
+    throw new Error('method detectCtor error')
+  }
+  const index      = meta['index']
+  return paramTypes[index] as Type<T>
+}
+
+const getFormBody =  async <T>(_: unknown, ctx: ExecutionContext) => {
+  const request  = ctx.switchToHttp().getRequest<FastifyRequest>()
+  const response = ctx.switchToHttp().getResponse<FastifyReply>()
+  const ctor     = detectCtor<T>(ctx, getFormBody)
+  const instance = plainToInstance(ctor, request.body) as any
+  const errors   = await validate(instance)
+  const formBody = instance
+  if (errors.length) {
+    const form           = errors[0].target
+    const takeFirstError = (constraints: { [key: string]: string }) => {
+      if (!constraints) return {}
+      const firstKey = Object.keys(constraints)[0]
+      return { [firstKey]: constraints[firstKey] }
+    }
+    Object.keys(form).map(field =>
+      response.formFieldError(field,
+        takeFirstError(errors.find(_ => _.property === field)?.constraints)))
+  } else {
+    response.setValidatorErrors(null)
+  }
+  formBody['isValid'] = errors.length === 0
+  return formBody
+}
+
 /**
  * Lấy ra data của form được post từ html
  */
-export const FormBody = createParamDecorator(
-  async <T extends FormBase = FormBase>(ctor: Type<T & FormBase>, ctx: ExecutionContext) => {
-    const request  = ctx.switchToHttp().getRequest<FastifyRequest>()
-    const response = ctx.switchToHttp().getResponse<FastifyReply>()
-    const formBody = <T>plainToInstance(ctor, request.body)
-    const errors   = await validate(formBody)
-    if (errors.length) {
-      formBody.isValid     = false
-      const form           = errors[0].target as FormBase
-      const takeFirstError = (constraints: { [key: string]: string }) => {
-        if (!constraints) return {}
-        const firstKey = Object.keys(constraints)[0]
-        return { [firstKey]: constraints[firstKey] }
-      }
-      Object.keys(form).map(field =>
-        response.formFieldError(field,
-          takeFirstError(errors.find(_ => _.property === field)?.constraints)))
-    } else {
-      formBody.isValid           = true
-      response.setValidatorErrors(null)
-    }
-    return formBody
+export const FormBody = createParamDecorator(getFormBody)
+
+const getCookieValue = async <T>(option: { key: string, decrypted?: boolean }, ctx: ExecutionContext) => {
+  const request = ctx.switchToHttp().getRequest<FastifyRequest>()
+  const raw     = request.cookies[option.key] || ''
+  if (!raw || raw.trim() === '') { return null }
+  const ctor = detectCtor(ctx, getCookieValue)
+  if (!option.decrypted) {
+    return await FunctionStatic
+      .decrypt(raw)
+      .then(JSON.parse)
+      .then(value => plainToInstance(ctor, value))
   }
-)
+  return plainToInstance(ctor, JSON.parse(raw))
+}
 
 /**
  * Lấy value từ cookie
  * */
-export const CookieValue = createParamDecorator(
-  async <T>(option: { key: string, ctor: Type<T>, decrypted?: boolean }, ctx: ExecutionContext) => {
-    const request = ctx.switchToHttp().getRequest<FastifyRequest>()
-    const raw     = request.cookies[option.key] || ''
-    if (!raw || raw.trim() === '') { return null }
-
-    const handler        = ctx.getHandler()
-    const classPrototype = ctx.getClass().prototype
-    const paramTypes     = Reflect.getMetadata('design:paramtypes', classPrototype, handler.name)
-    console.log('paramTypes', paramTypes)
-    const propertyKeys = ["cart"]
-    console.log('propertyKeys', propertyKeys)
-    const propertyKey  = propertyKeys.find(key => Reflect.getMetadata('CookieValue', handler))
-    console.log('propertyKey', propertyKey)
-    console.log('propertyKey2', Reflect.getMetadata('CookieValue', handler))
-    console.log('propertyKey32', Reflect.getMetadataKeys(handler))
-    const propertyType = Reflect.getMetadata("design:type", classPrototype, propertyKey)
-    console.log('propertyType', propertyType)
-
-    if (!option.decrypted) {
-      return await FunctionStatic.decrypt(raw).then(value =>
-        plainToInstance(option.ctor, JSON.parse(value)))
-    }
-    return plainToInstance(option.ctor, JSON.parse(raw))
-  }
-)
+export const CookieValue = createParamDecorator(getCookieValue)
