@@ -1,6 +1,6 @@
 {
   "name": "@mirage-borderless/lib-nestjs-v1",
-  "version": "1.0.19",
+  "version": "1.0.21",
   "description": "Nest TypeScript starter repository",
   "license": "MIT",
   "type": "commonjs",
