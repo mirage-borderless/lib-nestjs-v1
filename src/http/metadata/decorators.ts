@@ -65,6 +65,12 @@ function getCallerFunction(): string | undefined {
   return undefined
 }
 
+const __userFn = (_: unknown, ctx: ExecutionContext) => {
+  const request = ctx.switchToHttp().getRequest<FastifyRequest>()
+  if (!request.user) throw new NotImplementedException('Not found attribute key user from request context, please login first, corrupted...')
+  request.user.detail = plainToInstance(IdentityUser.Model, request.user.detail)
+  return plainToInstance(IdentityUser.JwtSign, request.user)
+}
 /**
  * @description
  * Lấy ra thông tin của user đang đăng nhập
@@ -76,12 +82,7 @@ function getCallerFunction(): string | undefined {
  * |    view(@User() user: JwtUserSign) { ... }
  * | }
  */
-export const User = createParamDecorator((_: unknown, ctx: ExecutionContext) => {
-  const request = ctx.switchToHttp().getRequest<FastifyRequest>()
-  if (!request.user) throw new NotImplementedException('Not found attribute key user from request context, please login first, corrupted...')
-  request.user.detail = plainToInstance(IdentityUser.Model, request.user.detail)
-  return plainToInstance(IdentityUser.JwtSign, request.user)
-})
+export const User = createParamDecorator(__userFn)
 
 /**
  * Lấy ra kiểu trả về của 1 param khi param có sử dụng Param
@@ -98,17 +99,7 @@ function detectParamCtor<T>(ctx: ExecutionContext): Type<T> {
   return paramTypes[index] as Type<T>
 }
 
-/**
- * @description
- * Lấy ra thông tin của user đang đăng nhập
- * @example
- * | @Controller()
- * | export class LoginController {
- * |    @Post('auth/login')
- * |    async login(@FormBody() form: LoginForm) { ... }
- * | }
- */
-export const FormBody = createParamDecorator(async <T>(_: unknown, ctx: ExecutionContext) => {
+const __formBodyFn = async <T>(_: unknown, ctx: ExecutionContext) => {
   const request       = ctx.switchToHttp().getRequest<FastifyRequest>()
   const response      = ctx.switchToHttp().getResponse<FastifyReply>()
   const ctor          = detectParamCtor<T>(ctx)
@@ -131,8 +122,28 @@ export const FormBody = createParamDecorator(async <T>(_: unknown, ctx: Executio
     response.setValidatorErrors(null)
   }
   return formBody
-})
+}
 
+/**
+ * @description
+ * Lấy ra thông tin của user đang đăng nhập
+ * @example
+ * | @Controller()
+ * | export class LoginController {
+ * |    @Post('auth/login')
+ * |    async login(@FormBody() form: LoginForm) { ... }
+ * | }
+ */
+export const FormBody = createParamDecorator(__formBodyFn)
+
+const __cookieValueFn = async <T>(key: string, ctx: ExecutionContext) => {
+  const request = ctx.switchToHttp().getRequest<FastifyRequest>()
+  const raw     = request.cookies[key] || ''
+  const ctor    = detectParamCtor<T>(ctx)
+  if (!raw || raw.trim() === '') { return plainToInstance(ctor, {}) }
+  const decrypt  = await FunctionStatic.decrypt(raw)
+  return plainToInstance(ctor, JSON.parse(decrypt)) as ClassConstructor<T>
+}
 /**
  * @description
  * Lấy ra giá trị của cookie đã mã hoá theo key
@@ -143,11 +154,4 @@ export const FormBody = createParamDecorator(async <T>(_: unknown, ctx: Executio
  * |    async cart(@CookieValue('__cookie.cart') cart: ShoppingCart) { ... }
  * | }
  */
-export const CookieValue = createParamDecorator(async <T>(key: string, ctx: ExecutionContext) => {
-  const request = ctx.switchToHttp().getRequest<FastifyRequest>()
-  const raw     = request.cookies[key] || ''
-  const ctor    = detectParamCtor<T>(ctx)
-  if (!raw || raw.trim() === '') { return plainToInstance(ctor, {}) }
-  const decrypt  = await FunctionStatic.decrypt(raw)
-  return plainToInstance(ctor, JSON.parse(decrypt)) as ClassConstructor<T>
-})
+export const CookieValue = createParamDecorator(__cookieValueFn)
