@@ -13,7 +13,7 @@ export class CommonAuthJwtService<T extends IdentityUser.Model = IdentityUser.Mo
     private readonly identityRepo: IdentityUserService<T>,
   ) {}
 
-  private async authenticate(claim: T | { [K in keyof IdentityUser.Model]?: any }) {
+  private async authenticate(claim: Partial<T>) {
     const identityUser = await this.identityRepo.findByUsername(claim.username)
     if (!identityUser) {
       const validators: Validators = {
@@ -33,9 +33,7 @@ export class CommonAuthJwtService<T extends IdentityUser.Model = IdentityUser.Mo
       const validators: Validators = {
         values$: claim,
         errors: {
-          password: { invalid :
-              'common.auth.password.wrong'
-          }
+          password: { invalid : 'common.auth.password.wrong' }
         }
       }
       throw new UnauthorizedException(validators)
@@ -46,16 +44,14 @@ export class CommonAuthJwtService<T extends IdentityUser.Model = IdentityUser.Mo
       idToken: uuidv4()        as IdentityUser.IdToken,
       detail:  identityUser
     }
-    return {
-      accessToken: await FunctionStatic.encrypt(verify),
-      verify
-    }
+    const accessToken =  await FunctionStatic.encrypt(verify)
+    return { accessToken, verify }
   }
 
   /**
    * Tạo ra accessToken
    */
-  public async authenticateAndSetJwtCookie(claim: T | { [K in keyof IdentityUser.Model]?: any }) {
+  public async authenticateAndSetJwtCookie(claim: Partial<T>) {
     return await this.authenticate(claim)
   }
 

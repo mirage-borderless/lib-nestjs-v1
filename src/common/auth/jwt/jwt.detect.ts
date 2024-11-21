@@ -27,7 +27,7 @@ export class CommonJwtAutoDetect<T extends IdentityUser.Model = IdentityUser.Mod
           throw new UnauthorizedException('common.auth.error.session_expired')
         }
         request.user            = jwt
-        request.isAuthenticated = true
+        request.isAuthenticated = !!request.user
         response.locals.uuid    = jwt.idToken
         return true
       })

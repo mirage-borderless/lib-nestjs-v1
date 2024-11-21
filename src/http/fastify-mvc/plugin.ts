@@ -13,9 +13,15 @@ const plugins: FastifyPluginAsync = async (
   instance: FastifyInstance,
   app:      NestFastifyApplication
 ) => {
+  /**
+   * Lưu instance của application vào request
+   * */
   instance.decorateRequest('backend', function (this: FastifyRequest) {
     return app
   })
+  /**
+   * Validator setter
+   * */
   instance.decorateReply('setValidatorErrors', function (
     this:  FastifyReply,
     error: Record<any, any>,
@@ -41,7 +47,9 @@ const plugins: FastifyPluginAsync = async (
     }
     return this
   })
-
+  /**
+   * Notification reply
+   * */
   instance.decorateReply('withNotification', function (this: FastifyReply, toast: Toast) {
     const request      = this.request as FastifyRequest
     const toastService = request.backend().get(ToastService)
@@ -50,13 +58,17 @@ const plugins: FastifyPluginAsync = async (
     }
     return this
   })
-
+  /**
+   * Render html template
+   * */
   instance.decorateReply('viewAsHtml', function (this: FastifyReply, handler: Function) {
     this.buildViewValue(handler)
     const template = Reflect.getMetadata(RENDER_METADATA, handler)
     this.view(template)
   })
-
+  /**
+   * Append view value before send
+   * */
   instance.decorateReply('buildViewValue', function (this: FastifyReply, handler: Function) {
     const request   = this.request as FastifyRequest
     const response  = this
@@ -78,6 +90,10 @@ const plugins: FastifyPluginAsync = async (
   })
 }
 
+/**
+ * @function
+ * Sử dụng tất cả các plugins của @mirage-borderless
+ * */
 export const corePlugins = (app: NestFastifyApplication) =>
   register((instance: FastifyInstance) => plugins(instance, app), {
     name:    'lib-core-plugins-v1',
