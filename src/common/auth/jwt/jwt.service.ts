@@ -4,7 +4,7 @@ import { hash }                                     from 'typeorm/util/StringUti
 import { v4 as uuidv4 }                             from 'uuid'
 import { IdentityUser }                             from '../conf/database/entity/identity-user.entity'
 import { IdentityUserService }                      from '../conf/database/service/identity-user.service'
-import { CommonJwtAutoDetect }                      from './jwt.detect'
+import { CommonAuthJwtGuard }                       from './jwt.guard'
 
 @Injectable({ scope: Scope.REQUEST })
 export class CommonAuthJwtService<T extends IdentityUser.Model = IdentityUser.Model> {
@@ -65,12 +65,12 @@ export class CommonAuthJwtService<T extends IdentityUser.Model = IdentityUser.Mo
   }
 
   public getAccessToken(request: FastifyRequest, from?: 'header' | 'cookie') {
-    const tokenFromHeader: string = request.headers[CommonJwtAutoDetect.HEADER_VIA_AUTHORIZATION] as string
-    const tokenFromCookie: string = request.cookies[CommonJwtAutoDetect.COOKIE_VIA_AUTHORIZATION] as string
+    const tokenFromHeader: string = request.headers[CommonAuthJwtGuard.HEADER_VIA_AUTHORIZATION] as string
+    const tokenFromCookie: string = request.cookies[CommonAuthJwtGuard.COOKIE_VIA_AUTHORIZATION] as string
     return !from ? tokenFromHeader || tokenFromCookie : from === 'header' ? tokenFromHeader : tokenFromCookie
   }
 
   public logout(response: FastifyReply) {
-    response.clearCookie(CommonJwtAutoDetect.COOKIE_VIA_AUTHORIZATION)
+    response.clearCookie(CommonAuthJwtGuard.COOKIE_VIA_AUTHORIZATION)
   }
 }

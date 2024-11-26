@@ -9,42 +9,50 @@ import { FunctionStatic }                    from 'src/util'
 
 /**
  * @example
- * | @Controller()
- * | export class HomeController {
- * |    @Get('path/:id')
- * |    @UseJs(['jquery', 'bootstrap'])
- * |    view() { ... }
- * | }
+ * ```typescript
+ * @Controller()
+ * export class HomeController {
+ *    @Get('path/:id')
+ *    @UseJs(['jquery', 'bootstrap'])
+ *    view() { }
+ * }
+ * ```
  */
 export const UseJs     = Reflector.createDecorator<string[] | string>()
 /**
  * @example
- * | @Controller()
- * | export class HomeController {
- * |    @Get('path/:id')
- * |    @UseCss(['site', 'bootstrap'])
- * |    view() { ... }
- * | }
+ * ```typescript
+ * @Controller()
+ * export class HomeController {
+ *    @Get('path/:id')
+ *    @UseCss(['site', 'bootstrap'])
+ *    view() { }
+ * }
+ * ```
  */
 export const UseCss    = Reflector.createDecorator<string[] | string>()
 /**
  * @example
- * | @Controller()
- * | export class HomeController {
- * |    @Get('path/:id')
- * |    @PageTitle('Home page')
- * |    view() { ... }
- * | }
+ * ```typescript
+ * @Controller()
+ * export class HomeController {
+ *    @Get('path/:id')
+ *    @PageTitle('Home page')
+ *    view() { }
+ * }
+ * ```
  */
 export const PageTitle = Reflector.createDecorator<string>()
 /**
  * @example
- * | @Controller()
- * | export class HomeController {
- * |    @Get('path/:id')
- * |    @Stepper({ index: 1, steps: ['Step 1', 'Step 2'] })
- * |    view() { ... }
- * | }
+ * ```typescript
+ * @Controller()
+ * export class HomeController {
+ *    @Get('path/:id')
+ *    @Stepper({ index: 1, steps: ['Step 1', 'Step 2'] })
+ *    view() { }
+ * }
+ * ```
  */
 export const Stepper   = Reflector.createDecorator<{ index: number, steps: string[] }>()
 
@@ -72,15 +80,15 @@ const __userFn = (_: unknown, ctx: ExecutionContext) => {
   return plainToInstance(IdentityUser.JwtSign, request.user)
 }
 /**
- * @description
- * Lấy ra thông tin của user đang đăng nhập
  * @example
- * | @Controller()
- * | @UseGuard(CommonAuthJwtGuard)
- * | export class HomeController {
- * |    @Get('path/:id')
- * |    view(@User() user: JwtUserSign) { ... }
- * | }
+ * ```typescript
+ * @Controller()
+ * @UseGuard(CommonAuthJwtGuard)
+ * export class HomeController {
+ *    @Get('path/:id')
+ *    view(@User() user: JwtUserSign) { ... }
+ * }
+ * ```
  */
 export const User = createParamDecorator(__userFn)
 
@@ -123,16 +131,15 @@ const __formBodyFn = async <T>(_: unknown, ctx: ExecutionContext) => {
   }
   return formBody
 }
-
 /**
- * @description
- * Lấy ra thông tin của user đang đăng nhập
  * @example
- * | @Controller()
- * | export class LoginController {
- * |    @Post('auth/login')
- * |    async login(@FormBody() form: LoginForm) { ... }
- * | }
+ * ```typescript
+ * @Controller()
+ * export class LoginController {
+ *    @Get('auth/login')
+ *    async login(@FormBody() form: LoginForm) { }
+ * }
+ * ```
  */
 export const FormBody = createParamDecorator(__formBodyFn)
 
@@ -145,13 +152,13 @@ const __cookieValueFn = async <T>(key: string, ctx: ExecutionContext) => {
   return plainToInstance(ctor, JSON.parse(decrypt)) as ClassConstructor<T>
 }
 /**
- * @description
- * Lấy ra giá trị của cookie đã mã hoá theo key
  * @example
- * | @Controller()
- * | export class ShoppingController {
- * |    @Get('auth/login')
- * |    async cart(@CookieValue('__cookie.cart') cart: ShoppingCart) { ... }
- * | }
+ * ```typescript
+ * @Controller()
+ * export class ShoppingController {
+ *    @Get('cart')
+ *    async cart(@CookieValue('__cookie.cart') cart: ShoppingCart) { }
+ * }
+ * ```
  */
 export const CookieValue = createParamDecorator(__cookieValueFn)
