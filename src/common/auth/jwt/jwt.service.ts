@@ -4,7 +4,7 @@ import { hash }                                     from 'typeorm/util/StringUti
 import { v4 as uuidv4 }                             from 'uuid'
 import { IdentityUser }                             from '../conf/database/entity/identity-user.entity'
 import { IdentityUserService }                      from '../conf/database/service/identity-user.service'
-import { CommonJwtAutoDetect }                      from './jwt.detect'
+import { CommonAuthJwtGuard }                       from './jwt.guard'
 
 @Injectable({ scope: Scope.REQUEST })
 export class CommonAuthJwtService<T extends IdentityUser.Model = IdentityUser.Model> {
@@ -13,7 +13,7 @@ export class CommonAuthJwtService<T extends IdentityUser.Model = IdentityUser.Mo
     private readonly identityRepo: IdentityUserService<T>,
   ) {}
 
-  private async authenticate(claim: T | { [K in keyof IdentityUser.Model]?: any }) {
+  private async authenticate(claim: Partial<T>) {
     const identityUser = await this.identityRepo.findByUsername(claim.username)
     if (!identityUser) {
       const validators: Validators = {
@@ -33,9 +33,7 @@ export class CommonAuthJwtService<T extends IdentityUser.Model = IdentityUser.Mo
       const validators: Validators = {
         values$: claim,
         errors: {
-          password: { invalid :
-              'common.auth.password.wrong'
-          }
+          password: { invalid : 'common.auth.password.wrong' }
         }
       }
       throw new UnauthorizedException(validators)
@@ -46,16 +44,14 @@ export class CommonAuthJwtService<T extends IdentityUser.Model = IdentityUser.Mo
       idToken: uuidv4()        as IdentityUser.IdToken,
       detail:  identityUser
     }
-    return {
-      accessToken: await FunctionStatic.encrypt(verify),
-      verify
-    }
+    const accessToken =  await FunctionStatic.encrypt(verify)
+    return { accessToken, verify }
   }
 
   /**
    * Tạo ra accessToken
    */
-  public async authenticateAndSetJwtCookie(claim: T | { [K in keyof IdentityUser.Model]?: any }) {
+  public async authenticateAndSetJwtCookie(claim: Partial<T>) {
     return await this.authenticate(claim)
   }
 
@@ -69,12 +65,12 @@ export class CommonAuthJwtService<T extends IdentityUser.Model = IdentityUser.Mo
   }
 
   public getAccessToken(request: FastifyRequest, from?: 'header' | 'cookie') {
-    const tokenFromHeader: string = request.headers[CommonJwtAutoDetect.HEADER_VIA_AUTHORIZATION] as string
-    const tokenFromCookie: string = request.cookies[CommonJwtAutoDetect.COOKIE_VIA_AUTHORIZATION] as string
+    const tokenFromHeader: string = request.headers[CommonAuthJwtGuard.HEADER_VIA_AUTHORIZATION] as string
+    const tokenFromCookie: string = request.cookies[CommonAuthJwtGuard.COOKIE_VIA_AUTHORIZATION] as string
     return !from ? tokenFromHeader || tokenFromCookie : from === 'header' ? tokenFromHeader : tokenFromCookie
   }
 
   public logout(response: FastifyReply) {
-    response.clearCookie(CommonJwtAutoDetect.COOKIE_VIA_AUTHORIZATION)
+    response.clearCookie(CommonAuthJwtGuard.COOKIE_VIA_AUTHORIZATION)
   }
 }

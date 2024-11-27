@@ -9,7 +9,7 @@ export namespace IdentityUser {
   export const Id      = (id: string) => id as Id
   export type  IdToken = string & { readonly __brand: unique symbol }
 
-  export type JwtSign<T extends IdentityUser.Model = IdentityUser.Model> = {
+  export class JwtSign<T extends IdentityUser.Model = IdentityUser.Model> {
     id:       IdentityUser.Id
     username: string
     password: string
