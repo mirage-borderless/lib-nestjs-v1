@@ -7,7 +7,6 @@ export class CommonAuthJwtGuard implements CanActivate {
   static readonly COOKIE_VIA_AUTHORIZATION = 'Authorization'
   static readonly HEADER_VIA_AUTHORIZATION = 'Authorization'
 
-
   async canActivate(context: ExecutionContext) {
     const request       = context.switchToHttp().getRequest<FastifyRequest>()
     const response      = context.switchToHttp().getResponse<FastifyReply>()
