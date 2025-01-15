@@ -5,7 +5,7 @@ import * as fastify               from 'fastify'
 import { DataSourceOptions }      from 'typeorm'
 import { Driver }                 from 'typeorm/driver/Driver'
 
-export * from './http'
+export * from './fastify'
 export * from './util'
 export * from './common'
 

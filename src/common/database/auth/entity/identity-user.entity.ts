@@ -1,24 +1,36 @@
-import { UUIDBaseEntity } from '../../../../database/entity/uuid.base-entity'
+import { UUIDBaseEntity } from 'src/common/database/entity/uuid.base-entity'
 import { Column, Entity } from 'typeorm'
+import { v4 as uuid }     from 'uuid'
 
 /**
  * Table user mặc định
  */
 export namespace IdentityUser {
-  export type  Id      = string & { readonly __brand: unique symbol }
-  export const Id      = (id: string) => id as Id
-  export type  IdToken = string & { readonly __brand: unique symbol }
+  export type  Id          = string & { readonly __brand: unique symbol }
+  export const Id          = (id: string) => id as Id
+  export type  IdToken     = string & { readonly __brand: unique symbol }
+  export const NextIdToken = () => uuid() as IdToken
 
   export class JwtSign<T extends IdentityUser.Model = IdentityUser.Model> {
     id:       IdentityUser.Id
     username: string
     password: string
-    exp:      number
+    iat:      number
     idToken:  IdentityUser.IdToken
     detail:   T
+
+    constructor(private readonly entity: T) {
+      this.detail   = entity
+      this.username = entity.username
+      this.password = entity.password
+      this.iat      = Date.now()
+      this.idToken  = IdentityUser.NextIdToken()
+      this.id       = IdentityUser.Id(entity.id)
+    }
   }
 
   export enum Role {
+    IS_NONE,
     IS_GUEST,
     IS_VIEWER,
     IS_EDITOR,
