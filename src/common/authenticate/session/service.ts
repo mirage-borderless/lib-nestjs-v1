@@ -1,5 +1,6 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common'
 import { JwtService }                        from '@nestjs/jwt'
+import { ErrorMessage }                      from 'src/common/authenticate/session/constants'
 import { IdentityUser, IdentityUserService } from 'src/common/database/auth'
 import { FunctionStatic }                    from 'src/util'
 import { hash }                              from 'typeorm/util/StringUtils'
@@ -12,27 +13,15 @@ export class AuthenticateService<T extends IdentityUser.Model = IdentityUser.Mod
     private readonly jwtService:  JwtService
   ) {}
 
-  async validateUser(username: string, pass: string): Promise<T> {
-    // const user = await this.accountService.findByUsername(username)
-    // if (!!user && user.password === hash(pass)) {
-    //   return user
-    // }
-    // return null
-
-    return { username: 'admin', password: '' } as T
-  }
-
   async signIn(username: string, pass: string) {
     const user = await this.userService.findByUsername(username)
     if (!!user) {
       if (user.password === hash(pass)) {
-        const jwtUserSign: JwtUserSign<T> = new IdentityUser.JwtSign<T>(user)
-        return this.jwtService.sign(FunctionStatic.encrypt(jwtUserSign), {
-          secret: 'secret'
-        })
+        const jwtUserSign: JwtUserSign = new IdentityUser.JwtSign(user)
+        return this.jwtService.sign({ data: FunctionStatic.encrypt(jwtUserSign) })
       }
-      throw new UnauthorizedException('authenticate.sign_in.wrong_pass')
+      throw new UnauthorizedException(ErrorMessage.SIGN_IN.wrongPass)
     }
-    throw new UnauthorizedException('authenticate.sign_in.not_exist_user')
+    throw new UnauthorizedException(ErrorMessage.SIGN_IN.notExistUser)
   }
 }

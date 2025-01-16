@@ -1,5 +1,5 @@
+import { IdentityUser }                               from 'src/common/database/auth'
 import { BeforeInsert, BeforeUpdate, Column, Entity } from 'typeorm'
-import { IdentityUser }                               from '../../../auth'
 import { UUIDBaseEntity }                             from '../uuid.base-entity'
 
 export namespace OnetimeSession {
@@ -53,8 +53,8 @@ export namespace OnetimeSession {
     }
   }
 
-  export const Model  = OnetimeSessionTable
-  export type  Model  = OnetimeSessionTable
+  export const Model                                = OnetimeSessionTable
+  export type  Model<T extends OnetimeSessionTable> = T extends OnetimeSessionTable ? T : OnetimeSessionTable
   export interface Content {
     userid:        IdentityUser.Id,
     username:      string,

@@ -1,19 +1,18 @@
 import { ForbiddenException, Injectable, Type, UnauthorizedException } from '@nestjs/common'
+import { JwtService }                                                  from '@nestjs/jwt'
 import { PassportStrategy }                                            from '@nestjs/passport'
-import { plainToInstance }                                       from 'class-transformer'
-import { ExtractJwt, Strategy, StrategyOptionsWithRequest } from 'passport-jwt'
-import { IdentityUser }                                     from 'src/common/database/auth/entity/identity-user.entity'
-import { CookieKeys }                                       from 'src/common/authenticate/session/constants'
-import { AuthenticateService }                              from 'src/common/authenticate/session/service'
-import { FunctionStatic }                                        from 'src/util'
-import JwtSign = IdentityUser.JwtSign
+import { plainToInstance }                                             from 'class-transformer'
+import { ExtractJwt, Strategy, StrategyOptionsWithRequest }            from 'passport-jwt'
+import { CookieKeys, ErrorMessage }                                    from 'src/common/authenticate/session/constants'
+import { IdentityUser }                                                from 'src/common/database/auth/entity/identity-user.entity'
+import { FunctionStatic }                                              from 'src/util'
 
 @Injectable()
-export class SessionStrategy<T extends IdentityUser.Model = IdentityUser.Model> extends PassportStrategy(Strategy, 'cookie-session') {
+export class SessionStrategy<T extends IdentityUser.Model> extends PassportStrategy(Strategy, 'cookie-session') {
 
   constructor(
     private readonly identityUserCtor: Type<T>,
-    private readonly authService:      AuthenticateService
+    private readonly jwtService:       JwtService
   ) {
     /**
      * Detect jwt from request cookies
@@ -24,19 +23,22 @@ export class SessionStrategy<T extends IdentityUser.Model = IdentityUser.Model> 
     /**
      * Fn handle passport verify callback
      */
-    const callback = async (
-      request: FastifyRequest,
-      token:   string,
-      _:       Function
+    const callback = (
+      request:    FastifyRequest,
+      jwtDecoded: { data: string, iat: number, exp: number },
+      done:       (err: any, secretOrKey?: string | Buffer) => void
     ) => {
-      const decrypted: string = await FunctionStatic.decrypt(token)
-      const payload           = JSON.parse(decrypted) as Partial<JwtSign<T>>
-      if (!!payload) {
-        const user              = plainToInstance(identityUserCtor, payload.detail)
-        const sign              = new IdentityUser.JwtSign(user)
-        request.user            = this.validate(sign)
-        request.isAuthenticated = !!request.user
-      }
+      FunctionStatic.decrypt(jwtDecoded.data).then(async (originalData: string) => {
+        try {
+          const payload = plainToInstance(IdentityUser.JwtSign, JSON.parse(originalData))
+          if (!!payload) {
+            request.user            = this.validate(payload)
+            request.isAuthenticated = !!request.user
+          }
+        } catch (e) {
+          done(new UnauthorizedException(ErrorMessage.ALERT.invalidToken))
+        }
+      }).catch(e => done(new UnauthorizedException(ErrorMessage.ALERT.tokenExpired)))
     }
     /**
      * Register request handler
@@ -53,9 +55,8 @@ export class SessionStrategy<T extends IdentityUser.Model = IdentityUser.Model> 
    * Validate authentication
    */
   private validate(payload: JwtUserSign) {
-    if (!payload)                                           throw new UnauthorizedException()
-    if ( payload.iat < Date.now())                          throw new UnauthorizedException()
-    if ( payload.detail.role === IdentityUser.Role.IS_NONE) throw new ForbiddenException()
+    if (!payload)                                           throw new UnauthorizedException(ErrorMessage.ALERT.invalidToken)
+    if ( payload.detail.role === IdentityUser.Role.IS_NONE) throw new ForbiddenException   (ErrorMessage.ALERT.accessDenied)
     return payload
   }
 }

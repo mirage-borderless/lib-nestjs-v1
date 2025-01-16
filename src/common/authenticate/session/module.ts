@@ -1,6 +1,6 @@
 import { DynamicModule, Module, Provider, Type } from '@nestjs/common'
-import { JwtModule }                             from '@nestjs/jwt'
-import { PassportModule }      from '@nestjs/passport'
+import { JwtModule, JwtService }                 from '@nestjs/jwt'
+import { PassportModule }                        from '@nestjs/passport'
 import { IdentityUser }        from 'src/common/database/auth'
 import { AuthenticateService } from './service'
 import { SessionStrategy }     from './strategy'
@@ -8,7 +8,8 @@ import { SessionStrategy }     from './strategy'
 const MODULES = [
   JwtModule.register({
     secret:       'secret',
-    signOptions: { expiresIn: '60s' }
+    signOptions: { expiresIn: '1h' },
+    global:        true
   }),
   // DaoServiceModule,
   PassportModule.register({
@@ -25,9 +26,9 @@ export class AuthenticateModule {
     const PROVIDERS: Provider[] = [
       AuthenticateService,
       {
-        inject:     [AuthenticateService],
+        inject:     [JwtService],
         provide:     SessionStrategy,
-        useFactory: (authService: AuthenticateService) => new SessionStrategy(ctor, authService)
+        useFactory: (jwtService: JwtService) => new SessionStrategy(ctor, jwtService)
       },
     ]
     return {

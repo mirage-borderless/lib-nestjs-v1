@@ -11,21 +11,21 @@ export namespace IdentityUser {
   export type  IdToken     = string & { readonly __brand: unique symbol }
   export const NextIdToken = () => uuid() as IdToken
 
-  export class JwtSign<T extends IdentityUser.Model = IdentityUser.Model> {
+  export class JwtSign {
     id:       IdentityUser.Id
     username: string
     password: string
-    iat:      number
     idToken:  IdentityUser.IdToken
-    detail:   T
+    detail:   Model
 
-    constructor(private readonly entity: T) {
-      this.detail   = entity
-      this.username = entity.username
-      this.password = entity.password
-      this.iat      = Date.now()
-      this.idToken  = IdentityUser.NextIdToken()
-      this.id       = IdentityUser.Id(entity.id)
+    constructor(private readonly entity?: Model) {
+      if (!!entity) {
+        this.detail   = entity
+        this.username = entity.username
+        this.password = entity.password
+        this.idToken  = IdentityUser.NextIdToken()
+        this.id       = IdentityUser.Id(entity.id)
+      }
     }
   }
 
@@ -46,6 +46,6 @@ export namespace IdentityUser {
     /* 3 */ @Column({ type: 'tinyint',  width: 4,   default: Role.IS_VIEWER.valueOf() }) role:     Role
   }
 
-  export type  Model = IdentityUserTable
+  export type Model<T = IdentityUserTable> = T extends IdentityUserTable ? T : IdentityUserTable
   export const Model = IdentityUserTable
 }

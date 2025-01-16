@@ -1,9 +1,9 @@
-import { DatabaseType }           from 'typeorm'
-import { IdentityUser }           from './common/auth/conf/database/entity/identity-user.entity'
-import * as nest                  from '@nestjs/core'
-import * as fastify               from 'fastify'
-import { DataSourceOptions }      from 'typeorm'
-import { Driver }                 from 'typeorm/driver/Driver'
+import { IdentityUser }      from 'src/common/database/auth'
+import { DatabaseType }      from 'typeorm'
+import * as nest             from '@nestjs/core'
+import * as fastify          from 'fastify'
+import { DataSourceOptions } from 'typeorm'
+import { Driver }            from 'typeorm/driver/Driver'
 
 export * from './fastify'
 export * from './util'
@@ -15,7 +15,7 @@ type RouteOptions = {
   data?: Record<string, any>
 }
 declare global {
-  type JwtUserSign<T extends IdentityUser.Model = IdentityUser.Model> = IdentityUser.JwtSign<T>
+  type JwtUserSign    = IdentityUser.JwtSign
   type FastifyReply   = fastify.FastifyReply
   type FastifyRequest = fastify.FastifyRequest
   type Validators     = {
