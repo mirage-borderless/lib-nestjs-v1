@@ -1,7 +1,7 @@
 import { FastifyCookie }          from '@fastify/cookie';
 import { FastifyViewOptions }     from '@fastify/view'
 import { NestFastifyApplication } from '@nestjs/platform-fastify'
-import { IdentityUser }           from 'src/common/database/auth'
+import { IdentityUser }           from '../../common/database/auth'
 import { Toast }                  from '../../common/notify/toast/model'
 
 type setValidatorErrors = (this: FastifyReply, error: Record<any, any>, form?: Record<any, any>) => FastifyReply

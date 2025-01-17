@@ -1,4 +1,4 @@
-import { IdentityUser }      from 'src/common/database/auth'
+import { IdentityUser }      from './common/database/auth'
 import { DatabaseType }      from 'typeorm'
 import * as nest             from '@nestjs/core'
 import * as fastify          from 'fastify'

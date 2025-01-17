@@ -1,12 +1,12 @@
 import { DynamicModule, Module, Provider }   from '@nestjs/common'
 import { getRepositoryToken, TypeOrmModule } from '@nestjs/typeorm'
-import { EntityClassOrSchema } from '@nestjs/typeorm/dist/interfaces/entity-class-or-schema.type'
-import { IdentityUserService } from 'src/common/database/auth/service/identity-user.service'
-import { Repository }          from 'typeorm'
-import { IdentityUser }        from 'src/common/database/auth/entity/identity-user.entity'
+import { EntityClassOrSchema }               from '@nestjs/typeorm/dist/interfaces/entity-class-or-schema.type'
+import { IdentityUser }                      from '../../../../common/database/auth/entity/identity-user.entity'
+import { IdentityUserService }               from '../../../../common/database/auth/service/identity-user.service'
+import { Repository }                        from 'typeorm'
 
 @Module({})
-export class CommonAuthRepositoryModule {
+export class AuthRepositoryModule {
 
   static forRoot<T extends IdentityUser.Model = IdentityUser.Model>(
     options: { dsn?: 'slave' | 'master', entity: EntityClassOrSchema }

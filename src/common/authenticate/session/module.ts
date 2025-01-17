@@ -1,41 +1,40 @@
-import { DynamicModule, Module, Provider, Type } from '@nestjs/common'
-import { JwtModule, JwtService }                 from '@nestjs/jwt'
-import { PassportModule }                        from '@nestjs/passport'
-import { IdentityUser }        from 'src/common/database/auth'
-import { AuthenticateService } from './service'
-import { SessionStrategy }     from './strategy'
-
-const MODULES = [
-  JwtModule.register({
-    secret:       'secret',
-    signOptions: { expiresIn: '1h' },
-    global:        true
-  }),
-  // DaoServiceModule,
-  PassportModule.register({
-    session:          true,
-    defaultStrategy: 'cookie-session',
-    property:        'user'
-  }),
-]
+import { DynamicModule, Module, Provider }    from '@nestjs/common'
+import { JwtModule }                          from '@nestjs/jwt'
+import { PassportModule }                     from '@nestjs/passport'
+import { EntityClassOrSchema }                from '@nestjs/typeorm/dist/interfaces/entity-class-or-schema.type'
+import { AuthRepositoryModule, IdentityUser } from '../../../common/database/auth'
+import { ToastModule }                        from '../../../common/notify'
+import { AuthenticateService }                from './service'
+import { SessionStrategy }                    from './strategy'
 
 @Module({})
 export class AuthenticateModule {
 
-  static forRoot<T extends IdentityUser.Model>(ctor: Type<T>): DynamicModule {
+  static forRoot<T extends IdentityUser.Model = IdentityUser.Model>(entity: EntityClassOrSchema): DynamicModule {
+    const MODULES = [
+      JwtModule.register({
+        secret:       'secret',
+        signOptions: { expiresIn: '1h' },
+        global:        true
+      }),
+      AuthRepositoryModule.forRoot({ entity }),
+      PassportModule.register({
+        session:          true,
+        defaultStrategy: 'cookie-session',
+        property:        'user'
+      }),
+      ToastModule
+    ]
+
     const PROVIDERS: Provider[] = [
-      AuthenticateService,
-      {
-        inject:     [JwtService],
-        provide:     SessionStrategy,
-        useFactory: (jwtService: JwtService) => new SessionStrategy(ctor, jwtService)
-      },
+      AuthenticateService<T>,
+      SessionStrategy
     ]
     return {
       imports:    MODULES,
       module:     this,
       providers:  PROVIDERS,
-      exports:   [AuthenticateService]
+      exports:   [AuthenticateService<T>]
     }
   }
 }

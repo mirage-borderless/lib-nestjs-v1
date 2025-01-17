@@ -4,8 +4,8 @@ import { ROUTE_ARGS_METADATA }                                                  
 import { Reflector }                         from '@nestjs/core'
 import { ClassConstructor, plainToInstance } from 'class-transformer'
 import { validate }                          from 'class-validator'
-import { IdentityUser }                      from 'src/common/database/auth'
-import { FunctionStatic }                    from 'src/util'
+import { IdentityUser }                      from '../../common/database/auth'
+import { FunctionStatic }                    from '../../util'
 
 /**
  * @example
@@ -96,7 +96,7 @@ export const User = createParamDecorator(__userFn)
  * Lấy ra kiểu trả về của 1 param khi param có sử dụng Param
  * Decorator
  * */
-function detectParamCtor<T>(ctx: ExecutionContext): Type<T> {
+function detectTypeofParam<T>(ctx: ExecutionContext): Type<T> {
   const caller     = getCallerFunction()
   const handler    = ctx.getHandler()
   const mirror     = ctx.getClass().prototype
@@ -110,7 +110,7 @@ function detectParamCtor<T>(ctx: ExecutionContext): Type<T> {
 const __formBodyFn = async <T>(_: unknown, ctx: ExecutionContext) => {
   const request       = ctx.switchToHttp().getRequest<FastifyRequest>()
   const response      = ctx.switchToHttp().getResponse<FastifyReply>()
-  const ctor          = detectParamCtor<T>(ctx)
+  const ctor          = detectTypeofParam<T>(ctx)
   const instance      = plainToInstance(ctor, request.body) as ClassConstructor<T>
   const errors        = await validate(instance)
   const formBody: any = instance
@@ -146,10 +146,10 @@ export const FormBody = createParamDecorator(__formBodyFn)
 const __cookieValueFn = async <T>(key: string, ctx: ExecutionContext) => {
   const request = ctx.switchToHttp().getRequest<FastifyRequest>()
   const raw     = request.cookies[key] || ''
-  const ctor    = detectParamCtor<T>(ctx)
+  const ctor    = detectTypeofParam<T>(ctx)
   if (!raw || raw.trim() === '') { return plainToInstance(ctor, {}) }
   const decrypt  = await FunctionStatic.decrypt(raw)
-  return plainToInstance(ctor, JSON.parse(decrypt)) as ClassConstructor<T>
+  return plainToInstance(ctor, decrypt) as ClassConstructor<T>
 }
 /**
  * @example

@@ -1,4 +1,4 @@
-import { IdentityUser }                               from 'src/common/database/auth'
+import { IdentityUser }                               from '../../../../common/database/auth'
 import { BeforeInsert, BeforeUpdate, Column, Entity } from 'typeorm'
 import { UUIDBaseEntity }                             from '../uuid.base-entity'
 

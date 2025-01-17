@@ -1,19 +1,15 @@
-import { ForbiddenException, Injectable, Type, UnauthorizedException } from '@nestjs/common'
-import { JwtService }                                                  from '@nestjs/jwt'
-import { PassportStrategy }                                            from '@nestjs/passport'
-import { plainToInstance }                                             from 'class-transformer'
-import { ExtractJwt, Strategy, StrategyOptionsWithRequest }            from 'passport-jwt'
-import { CookieKeys, ErrorMessage }                                    from 'src/common/authenticate/session/constants'
-import { IdentityUser }                                                from 'src/common/database/auth/entity/identity-user.entity'
-import { FunctionStatic }                                              from 'src/util'
+import { ForbiddenException, Injectable, UnauthorizedException }              from '@nestjs/common'
+import { PassportStrategy }                                                   from '@nestjs/passport'
+import { plainToInstance }                                                    from 'class-transformer'
+import { ExtractJwt, Strategy, StrategyOptionsWithRequest, VerifiedCallback } from 'passport-jwt'
+import { CookieKeys, ErrorMessage }                                           from '../../../common/authenticate/session/constants'
+import { IdentityUser }                                                       from '../../../common/database/auth/entity/identity-user.entity'
+import { FunctionStatic }                                                     from '../../../util'
 
 @Injectable()
-export class SessionStrategy<T extends IdentityUser.Model> extends PassportStrategy(Strategy, 'cookie-session') {
+export class SessionStrategy extends PassportStrategy(Strategy, 'cookie-session') {
 
-  constructor(
-    private readonly identityUserCtor: Type<T>,
-    private readonly jwtService:       JwtService
-  ) {
+  constructor() {
     /**
      * Detect jwt from request cookies
      */
@@ -26,15 +22,17 @@ export class SessionStrategy<T extends IdentityUser.Model> extends PassportStrat
     const callback = (
       request:    FastifyRequest,
       jwtDecoded: { data: string, iat: number, exp: number },
-      done:       (err: any, secretOrKey?: string | Buffer) => void
+      done:       VerifiedCallback
     ) => {
-      FunctionStatic.decrypt(jwtDecoded.data).then(async (originalData: string) => {
+      FunctionStatic.decrypt(jwtDecoded.data).then(async (dataStringify: string) => {
         try {
-          const payload = plainToInstance(IdentityUser.JwtSign, JSON.parse(originalData))
+          const parseJson = JSON.parse(dataStringify) as Partial<IdentityUser.JwtSign>
+          const payload   = plainToInstance(IdentityUser.JwtSign, parseJson)
           if (!!payload) {
             request.user            = this.validate(payload)
             request.isAuthenticated = !!request.user
           }
+          done(null, request.user)
         } catch (e) {
           done(new UnauthorizedException(ErrorMessage.ALERT.invalidToken))
         }

@@ -5,7 +5,8 @@ export namespace ErrorMessage {
   export const ALERT = {
     tokenExpired: 'authenticate.alert.token_expired',
     accessDenied: 'authenticate.alert.access_denied',
-    invalidToken: 'authenticate.alert.invalid_token'
+    invalidToken: 'authenticate.alert.invalid_token',
+    unauthorized: 'authenticate.alert.unauthorized'
   }
 
   export const SIGN_IN = {
