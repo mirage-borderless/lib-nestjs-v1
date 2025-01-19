@@ -1,8 +1,8 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common'
 import { JwtService }                        from '@nestjs/jwt'
-import { ErrorMessage }                      from '../../../common/authenticate/session/constants'
-import { IdentityUser, IdentityUserService } from '../../../common/database/auth'
-import { ToastService }                      from '../../../common/notify'
+import { ErrorMessage }                      from './constants'
+import { IdentityUser, IdentityUserService } from '../../database'
+import { ToastService }                      from '../../notify'
 import { FunctionStatic }                    from '../../../util'
 import { hash }                              from 'typeorm/util/StringUtils'
 

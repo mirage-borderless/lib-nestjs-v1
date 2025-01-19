@@ -1,13 +1,13 @@
-import { ForbiddenException, Injectable, UnauthorizedException }              from '@nestjs/common'
+import { Injectable, UnauthorizedException }                                  from '@nestjs/common'
 import { PassportStrategy }                                                   from '@nestjs/passport'
 import { plainToInstance }                                                    from 'class-transformer'
 import { ExtractJwt, Strategy, StrategyOptionsWithRequest, VerifiedCallback } from 'passport-jwt'
-import { CookieKeys, ErrorMessage }                                           from '../../../common/authenticate/session/constants'
-import { IdentityUser }                                                       from '../../../common/database/auth/entity/identity-user.entity'
 import { FunctionStatic }                                                     from '../../../util'
+import { IdentityUser }                                                       from '../../database'
+import { CookieKeys, ErrorMessage }                                           from './constants'
 
 @Injectable()
-export class SessionStrategy extends PassportStrategy(Strategy, 'cookie-session') {
+export class SessionStrategy extends PassportStrategy(Strategy, 'cookie-session', true) {
 
   constructor() {
     /**
@@ -53,8 +53,7 @@ export class SessionStrategy extends PassportStrategy(Strategy, 'cookie-session'
    * Validate authentication
    */
   private validate(payload: JwtUserSign) {
-    if (!payload)                                           throw new UnauthorizedException(ErrorMessage.ALERT.invalidToken)
-    if ( payload.detail.role === IdentityUser.Role.IS_NONE) throw new ForbiddenException   (ErrorMessage.ALERT.accessDenied)
+    if (!payload) throw new UnauthorizedException(ErrorMessage.ALERT.invalidToken)
     return payload
   }
 }

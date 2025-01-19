@@ -1,7 +1,7 @@
 import { ExecutionContext, ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common'
 import { AuthGuard }                                                               from '@nestjs/passport'
-import { ErrorMessage }                                                            from '../../authenticate/session/constants'
-import { IdentityUser }                                                            from '../../../common/database'
+import { IdentityUser }                                                            from '../../database'
+import { ErrorMessage }                                                            from './constants'
 
 @Injectable()
 export class AuthenticatedAsUser extends AuthGuard('cookie-session') {

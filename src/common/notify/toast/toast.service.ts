@@ -1,4 +1,4 @@
-import { IdentityUser } from '../../../common/database/auth'
+import { IdentityUser } from '../../database'
 import { Toast }        from './model'
 import { Injectable }   from '@nestjs/common'
 import { Subject }      from 'rxjs'

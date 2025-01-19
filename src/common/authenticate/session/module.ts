@@ -1,23 +1,34 @@
-import { DynamicModule, Module, Provider }    from '@nestjs/common'
-import { JwtModule }                          from '@nestjs/jwt'
-import { PassportModule }                     from '@nestjs/passport'
-import { EntityClassOrSchema }                from '@nestjs/typeorm/dist/interfaces/entity-class-or-schema.type'
-import { AuthRepositoryModule, IdentityUser } from '../../../common/database/auth'
-import { ToastModule }                        from '../../../common/notify'
-import { AuthenticateService }                from './service'
-import { SessionStrategy }                    from './strategy'
+import { DynamicModule, Module, Provider, Type }                                   from '@nestjs/common'
+import { getInjectionProviders }                                                   from '@nestjs/common/module-utils/utils';
+import { Constructor }                                                             from '@nestjs/common/utils/merge-with-values.util';
+import { JwtModule }                                                               from '@nestjs/jwt'
+import { PassportModule }                                                          from '@nestjs/passport'
+import { getRepositoryToken }                                                      from '@nestjs/typeorm';
+import { EntityClassOrSchema }                                                     from '@nestjs/typeorm/dist/interfaces/entity-class-or-schema.type'
+import { Repository }                                                                  from 'typeorm';
+import { AuthRepositoryModule, DatabaseConnection, IdentityUser, IdentityUserService } from '../../database'
+import { ToastModule }                                                                 from '../../notify'
+import { AuthenticateService }                                                     from './service'
+import { SessionStrategy }                                                         from './strategy'
 
 @Module({})
 export class AuthenticateModule {
 
-  static forRoot<T extends IdentityUser.Model = IdentityUser.Model>(entity: EntityClassOrSchema): DynamicModule {
+  static forRoot<U extends IdentityUserService<T>, T extends IdentityUser.Model = IdentityUser.Model>(
+    config: {
+      dsn?:     'slave' | 'master',
+      entity:    EntityClassOrSchema,
+      connect:   DatabaseConnection,
+      provider:  Constructor<U>,
+    }
+  ): DynamicModule {
     const MODULES = [
       JwtModule.register({
         secret:       'secret',
         signOptions: { expiresIn: '1h' },
         global:        true
       }),
-      AuthRepositoryModule.forRoot({ entity }),
+      AuthRepositoryModule.forRoot(config as any),
       PassportModule.register({
         session:          true,
         defaultStrategy: 'cookie-session',
@@ -34,7 +45,7 @@ export class AuthenticateModule {
       imports:    MODULES,
       module:     this,
       providers:  PROVIDERS,
-      exports:   [AuthenticateService<T>]
+      exports:   [...MODULES, ...PROVIDERS]
     }
   }
 }
