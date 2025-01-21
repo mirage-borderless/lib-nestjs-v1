@@ -3,8 +3,8 @@ import { Reflector }                           from '@nestjs/core'
 import { NestFastifyApplication }              from '@nestjs/platform-fastify'
 import { FastifyInstance, FastifyPluginAsync } from 'fastify'
 import fp                                      from 'fastify-plugin'
-import { Toast }                               from '../../common'
-import { ToastService }                        from '../../common'
+import { Toast }                               from '../../util'
+import { ToastService }                        from '../../util'
 import { PageTitle, Stepper, UseCss, UseJs }   from '../metadata'
 
 const register = fp
@@ -72,7 +72,7 @@ const plugins: FastifyPluginAsync = async (
   instance.decorateReply('buildViewValue', function (this: FastifyReply, handler: Function) {
     const request   = this.request as FastifyRequest
     const response  = this
-    const reflector = request.backend().get<Reflector>(Reflector)
+    const reflector = new Reflector()
     const styles    = reflector.get(UseCss,    handler)
     const scripts   = reflector.get(UseJs,     handler)
     const title     = reflector.get(PageTitle, handler)

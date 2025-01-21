@@ -41,4 +41,5 @@ export namespace IdentityUser {
 
   export type Model<T = IdentityUserTable> = T extends IdentityUserTable ? T : IdentityUserTable
   export const Model = IdentityUserTable
+  export type ModelWithNoId<T = IdentityUserTable> = T extends IdentityUserTable ? Omit<T, 'id'> : Omit<IdentityUserTable, 'id'>
 }

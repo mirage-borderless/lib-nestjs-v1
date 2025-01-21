@@ -1,5 +1,5 @@
-import { ExecutionContext, ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common'
-import { AuthGuard }                                                               from '@nestjs/passport'
+import { ExecutionContext, ForbiddenException, HttpStatus, Injectable, UnauthorizedException } from '@nestjs/common'
+import { AuthGuard }                                                                           from '@nestjs/passport'
 import { IdentityUser }                                                            from '../../database'
 import { ErrorMessage }                                                            from './constants'
 

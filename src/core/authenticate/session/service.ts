@@ -1,10 +1,10 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common'
 import { JwtService }                        from '@nestjs/jwt'
-import { ErrorMessage }                      from './constants'
-import { IdentityUser, IdentityUserService } from '../../database'
-import { ToastService }                      from '../../notify'
-import { FunctionStatic }                    from '../../../util'
 import { hash }                              from 'typeorm/util/StringUtils'
+import { FunctionStatic }                    from '../../../util'
+import { ToastService }                      from '../../../util/notify'
+import { IdentityUser, IdentityUserService } from '../../database'
+import { ErrorMessage }                      from './constants'
 
 @Injectable()
 export class AuthenticateService<T extends IdentityUser.Model = IdentityUser.Model> {
@@ -13,7 +13,7 @@ export class AuthenticateService<T extends IdentityUser.Model = IdentityUser.Mod
     private readonly userService:  IdentityUserService<T>,
     private readonly jwtService:   JwtService,
     private readonly toastService: ToastService,
-  ) {}
+  ) { }
 
   async signIn(claim: Pick<IdentityUser.Model, 'username' | 'password'>) {
     const user = await this.userService.findByUsername(claim.username)

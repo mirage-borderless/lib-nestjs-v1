@@ -4,7 +4,7 @@ import { ROUTE_ARGS_METADATA }                                                  
 import { Reflector }                         from '@nestjs/core'
 import { ClassConstructor, plainToInstance } from 'class-transformer'
 import { validate }                          from 'class-validator'
-import { IdentityUser }                      from '../../common'
+import { IdentityUser }                      from '../../core'
 import { FunctionStatic }                    from '../../util'
 
 /**

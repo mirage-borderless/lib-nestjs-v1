@@ -1,4 +1,4 @@
-import { IdentityUser }      from './common/database/auth'
+import { IdentityUser }      from './core'
 import { DatabaseType }      from 'typeorm'
 import * as nest             from '@nestjs/core'
 import * as fastify          from 'fastify'
@@ -7,7 +7,7 @@ import { Driver }            from 'typeorm/driver/Driver'
 
 export * from './fastify'
 export * from './util'
-export * from './common'
+export * from './core'
 
 type RouteOptions = {
   name: string,
