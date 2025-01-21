@@ -1,5 +1,5 @@
-import { DynamicModule, Provider, Type } from '@nestjs/common'
-import { Constructor }                   from '@nestjs/common/utils/merge-with-values.util'
+import { DynamicModule, Provider }                                                     from '@nestjs/common'
+import { Constructor }                                                                 from '@nestjs/common/utils/merge-with-values.util'
 import { JwtModule, JwtService }                                                       from '@nestjs/jwt'
 import { PassportModule }                                                              from '@nestjs/passport'
 import { getRepositoryToken }                                                          from '@nestjs/typeorm'
@@ -9,18 +9,23 @@ import { AuthRepositoryModule, DatabaseConnection, IdentityUser, IdentityUserSer
 import { AuthenticateService }                                                         from './service'
 import { SessionStrategy }                                                             from './strategy'
 
+export type AuthenticateWithNotification    = { enableToast: true  }
+export type AuthenticateWithoutNotification = { enableToast: false }
+
 export class AuthenticateModule {
 
-  static forRoot<T extends IdentityUser.Model = IdentityUser.Model, U extends IdentityUserService<T extends IdentityUser.Model ? T : IdentityUser.Model> = IdentityUserService<T extends IdentityUser.Model ? T : IdentityUser.Model>>(
+  static forRoot<
+    T extends IdentityUser.Model = IdentityUser.Model,
+    U extends IdentityUserService<T extends IdentityUser.Model ? T : IdentityUser.Model>
+            = IdentityUserService<T extends IdentityUser.Model ? T : IdentityUser.Model>
+  >(
     config: {
       entity:   Function,
       connect:  DatabaseConnection,
-      provider: Constructor<U>,
-      exceptionHandlers: Type<any>[]
-    }
+      provider: Constructor<U>
+    } & (AuthenticateWithNotification | AuthenticateWithoutNotification)
   ): DynamicModule {
     const MODULES = [
-      ...config.exceptionHandlers,
       JwtModule.register({
         secret:       'secret',
         signOptions: { expiresIn: '1h' },
@@ -51,7 +56,11 @@ export class AuthenticateModule {
       {
         provide:     AuthenticateService<T>,
         inject:     [IdentityUserService, JwtService, ToastService],
-        useFactory: (userService: IdentityUserService<T>, jwt: JwtService, toast: ToastService) => new AuthenticateService<T>(userService, jwt, toast)
+        useFactory: (
+          userService: IdentityUserService<T>,
+          jwt:         JwtService,
+          toast:       ToastService
+        ) => new AuthenticateService<T>(config.enableToast === true ? toast : undefined, userService, jwt)
       }
     ]
     return {
