@@ -1,13 +1,10 @@
-import { DynamicModule, Provider }                                                     from '@nestjs/common'
-import { Constructor }                                                                 from '@nestjs/common/utils/merge-with-values.util'
-import { JwtModule, JwtService }                                                       from '@nestjs/jwt'
-import { PassportModule }                                                              from '@nestjs/passport'
-import { getRepositoryToken }                                                          from '@nestjs/typeorm'
-import { Repository }                                                                  from 'typeorm'
-import { ToastModule, ToastService }                                                   from '../../../util'
-import { AuthRepositoryModule, DatabaseConnection, IdentityUser, IdentityUserService } from '../../database'
-import { AuthenticateService }                                                         from './service'
-import { SessionStrategy }                                                             from './strategy'
+import { DynamicModule, Provider }           from '@nestjs/common'
+import { JwtModule, JwtService }             from '@nestjs/jwt'
+import { PassportModule }                    from '@nestjs/passport'
+import { ToastModule, ToastService }         from '../../../util'
+import { IdentityUser, IdentityUserService } from '../../database'
+import { AuthenticateService }               from './service'
+import { SessionStrategy }                   from './strategy'
 
 export type AuthenticateWithNotification    = { enableToast: true  }
 export type AuthenticateWithoutNotification = { enableToast: false }
@@ -19,21 +16,13 @@ export class AuthenticateModule {
     U extends IdentityUserService<T extends IdentityUser.Model ? T : IdentityUser.Model>
             = IdentityUserService<T extends IdentityUser.Model ? T : IdentityUser.Model>
   >(
-    config: {
-      entity:   Function,
-      connect:  DatabaseConnection,
-      provider: Constructor<U>
-    } & (AuthenticateWithNotification | AuthenticateWithoutNotification)
+    config: AuthenticateWithNotification | AuthenticateWithoutNotification
   ): DynamicModule {
     const MODULES = [
       JwtModule.register({
         secret:       'secret',
         signOptions: { expiresIn: '1h' },
         global:        true
-      }),
-      AuthRepositoryModule.forRoot({
-        dsn:      'slave',
-        connect: { ...config.connect, entities: [config.entity] },
       }),
       PassportModule.register({
         session:          true,
@@ -44,15 +33,6 @@ export class AuthenticateModule {
     ]
 
     const PROVIDERS: Provider[] = [
-      {
-        provide:     config.provider,
-        inject:     [getRepositoryToken(config.entity)],
-        useFactory: (repository: Repository<T>) => new config.provider(repository)
-      },
-      {
-        provide:     IdentityUserService,
-        useExisting: config.provider
-      },
       {
         provide:     AuthenticateService<T>,
         inject:     [IdentityUserService, JwtService, ToastService],

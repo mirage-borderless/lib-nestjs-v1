@@ -1,6 +1,5 @@
 import { Injectable }   from '@nestjs/common'
-import { Repository }   from 'typeorm'
-import { IdentityUser } from '../entity/identity-user.entity'
+import { IdentityUser } from './entity/identity-user.entity'
 
 @Injectable()
 export abstract class IdentityUserService<T extends IdentityUser.Model = IdentityUser.Model> {
