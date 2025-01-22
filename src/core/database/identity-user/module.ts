@@ -3,6 +3,8 @@ import { Constructor }                                                  from '@n
 import { ConfigModule, ConfigService }                                  from '@nestjs/config'
 import { getRepositoryToken, TypeOrmModule, TypeOrmModuleAsyncOptions } from '@nestjs/typeorm'
 import * as process                                                     from 'process'
+import { session }                                                      from '../../authenticate'
+import { jwt }                                                          from '../../authenticate'
 import { Repository }                                                   from 'typeorm'
 import { IdentityUser, IdentityUserService }                            from '../identity-user'
 
@@ -24,7 +26,8 @@ export class IdentityUserDatabaseModule {
       /**
        * Other tables in database identity
        * */
-      tables?: Function[],
+      tables?:       Function[],
+      authenticate: 'jwt' | 'session'
     }
   ): DynamicModule {
     function createTypeOrmOptions(dsn: 'master') {
@@ -51,6 +54,7 @@ export class IdentityUserDatabaseModule {
     const MODULES = [
       TypeOrmModule.forRootAsync(createTypeOrmOptions('master')),
       TypeOrmModule.forFeature([...register.tables, register.user.table]),
+      register.authenticate === 'session' ? session.AuthenticateModule.forRoot({ enableToast: true }) : jwt.AuthenticateModule
     ]
     const PROVIDERS: Provider[] = [
       {
