@@ -1,10 +1,10 @@
-import { Injectable, Optional, UnauthorizedException } from '@nestjs/common'
-import { JwtService }                                  from '@nestjs/jwt'
-import { hash }                                        from 'typeorm/util/StringUtils'
-import { FunctionStatic }                              from '../../../util'
-import { ToastService }                                from '../../../util/notify'
-import { IdentityUser, IdentityUserService }           from '../../database'
-import { ErrorMessage }                                from './constants'
+import { forwardRef, Inject, Injectable, Optional, UnauthorizedException } from '@nestjs/common'
+import { JwtService }                                                      from '@nestjs/jwt'
+import { hash }                                                            from 'typeorm/util/StringUtils'
+import { FunctionStatic }                                                  from '../../../util'
+import { ToastService }                                                    from '../../../util/notify'
+import { IdentityUser, IdentityUserService }                               from '../../database'
+import { ErrorMessage }                                                    from './constants'
 
 @Injectable()
 export class AuthenticateService<T extends IdentityUser.Model = IdentityUser.Model> {
@@ -12,6 +12,7 @@ export class AuthenticateService<T extends IdentityUser.Model = IdentityUser.Mod
   constructor(
     @Optional()
     private readonly toastService: ToastService,
+    @Inject(forwardRef(() => IdentityUserService<T>))
     private readonly userService:  IdentityUserService<T>,
     private readonly jwtService:   JwtService,
   ) { }
