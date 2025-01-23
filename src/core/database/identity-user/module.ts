@@ -3,10 +3,24 @@ import { Constructor }                                                  from '@n
 import { ConfigModule, ConfigService }                                  from '@nestjs/config'
 import { getRepositoryToken, TypeOrmModule, TypeOrmModuleAsyncOptions } from '@nestjs/typeorm'
 import * as process                                                     from 'process'
-import { session }                                                      from '../../authenticate'
-import { jwt }                                                          from '../../authenticate'
 import { Repository }                                                   from 'typeorm'
+import { jwt, session }                                                 from '../../authenticate'
 import { IdentityUser, IdentityUserService }                            from '../identity-user'
+
+type ModifyUserTableWithService<
+  T extends IdentityUser.Model = IdentityUser.Model,
+  U extends IdentityUserService<T extends IdentityUser.Model ? T : IdentityUser.Model>
+          = IdentityUserService<T extends IdentityUser.Model ? T : IdentityUser.Model>
+> = {
+  service: Constructor<U>,
+  table:   Function
+}
+
+type ModifyUserTableWithoutService<
+  T extends IdentityUser.Model = IdentityUser.Model,
+  U extends IdentityUserService<T extends IdentityUser.Model ? T : IdentityUser.Model>
+          = IdentityUserService<T extends IdentityUser.Model ? T : IdentityUser.Model>
+> = Function
 
 export class IdentityUserDatabaseModule {
 
@@ -19,10 +33,7 @@ export class IdentityUserDatabaseModule {
       /**
        * User table, user service
        * */
-      user: {
-        service: Constructor<U>,
-        table:   Function
-      },
+      user?: ModifyUserTableWithService | ModifyUserTableWithoutService,
       /**
        * Other tables in database identity
        * */
@@ -30,6 +41,11 @@ export class IdentityUserDatabaseModule {
       authenticate: 'jwt' | 'session'
     }
   ): DynamicModule {
+    const userTableSetting = typeof register.user !== 'function' ? register.user : {
+      service: IdentityUserService.instance,
+      table:   register.user
+    }
+
     function createTypeOrmOptions(dsn: 'master') {
       return (<TypeOrmModuleAsyncOptions>{
         useFactory: async (configService: ConfigService) => ({
@@ -41,7 +57,7 @@ export class IdentityUserDatabaseModule {
           username:   'sa',
           password:    configService.get('MIRAGE_MSSQL_CONFIG_SA_PASSWORD', ''),
           database:    configService.get('MIRAGE_MSSQL_DATABASE_IDENTITY_USER', 'identity_user'),
-          entities:   [...register.tables, register.user.table],
+          entities:   [...register.tables, userTableSetting.table],
           synchronize: dsn === 'master',
           options: {
             trustServerCertificate: true,
@@ -53,18 +69,18 @@ export class IdentityUserDatabaseModule {
     }
     const MODULES = [
       TypeOrmModule.forRootAsync(createTypeOrmOptions('master')),
-      TypeOrmModule.forFeature([...register.tables, register.user.table]),
+      TypeOrmModule.forFeature([...register.tables, userTableSetting.table]),
       register.authenticate === 'session' ? session.AuthenticateModule.forRoot({ enableToast: true }) : jwt.AuthenticateModule
     ]
     const PROVIDERS: Provider[] = [
       {
-        provide:     register.user.service,
-        inject:     [getRepositoryToken(register.user.table)],
-        useFactory: (repository: Repository<T>) => new register.user.service(repository)
+        provide:     userTableSetting.service,
+        inject:     [getRepositoryToken(userTableSetting.table)],
+        useFactory: (repository: Repository<T>) => new userTableSetting.service(repository)
       },
       {
         provide:     IdentityUserService,
-        useExisting: register.user.service
+        useExisting: userTableSetting.service
       }
     ]
     return {
