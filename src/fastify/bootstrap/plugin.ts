@@ -97,6 +97,6 @@ const plugins: FastifyPluginAsync = async (
 export const corePlugins = (app: NestFastifyApplication) =>
   register((instance: FastifyInstance) => plugins(instance, app), {
     name:    'lib-core-plugins-v1',
-    fastify: '4.x'
+    fastify: '5.x'
   }
 )
