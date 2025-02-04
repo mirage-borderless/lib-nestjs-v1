@@ -1,17 +1,19 @@
-import { Injectable, UnauthorizedException }      from '@nestjs/common'
-import { ConfigService }                          from '@nestjs/config'
+import { forwardRef, Inject, Injectable, UnauthorizedException } from '@nestjs/common'
+import { ConfigService }                                         from '@nestjs/config'
 import { PassportStrategy }                       from '@nestjs/passport'
 import { plainToInstance }                        from 'class-transformer'
 import { ExtractJwt, Strategy, VerifiedCallback } from 'passport-jwt'
 import { FunctionStatic }                         from '../../../util'
-import { IdentityUser }                           from '../../database'
+import { IdentityUser, IdentityUserService }      from '../../database'
 import { CookieKeys, ErrorMessage }               from './constants'
 
 @Injectable()
 export class SessionStrategy extends PassportStrategy(Strategy as any, 'cookie-session', true) {
 
   constructor(
-    private readonly configService: ConfigService
+    readonly configService: ConfigService,
+    @Inject(forwardRef(() => IdentityUserService))
+    readonly userService:    IdentityUserService,
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([(req) => req.cookies[CookieKeys.AUTHORIZATION]]),
@@ -23,12 +25,12 @@ export class SessionStrategy extends PassportStrategy(Strategy as any, 'cookie-s
       jwtDecoded: { data: string, iat: number, exp: number },
       done:       VerifiedCallback
     ) => {
-      const transform = (dataStringify: string) => {
+      const transform = async (dataStringify: string) => {
         try {
           const parseJson = JSON.parse(dataStringify) as Partial<IdentityUser.JwtSign>
           const payload   = plainToInstance(IdentityUser.JwtSign, parseJson)
           if (!!payload) {
-            request.user            = this.validate(payload)
+            request.user            = await this.validate(payload)
             request.isAuthenticated = !!request.user
             done(null, request.user)
           }
@@ -50,8 +52,12 @@ export class SessionStrategy extends PassportStrategy(Strategy as any, 'cookie-s
   /**
    * Validate authentication
    */
-  validate(payload: JwtUserSign) {
+  async validate(payload: JwtUserSign) {
     if (!payload) throw new UnauthorizedException(ErrorMessage.ALERT.invalidToken)
-    return payload
+    const user = await this.userService.get(payload.id)
+    if (!!user && user.password === payload.detail.password && user.username === user.username) {
+      return payload
+    }
+    if (!payload) throw new UnauthorizedException(ErrorMessage.ALERT.invalidToken)
   }
 }

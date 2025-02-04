@@ -15,11 +15,7 @@ type AuthenticateSetting = { enableEncrypt: boolean } & (WithNotification | With
 
 export class AuthenticateModule {
 
-  static forRoot<
-    T extends IdentityUser.Model = IdentityUser.Model,
-    U extends IdentityUserService<T extends IdentityUser.Model ? T : IdentityUser.Model>
-            = IdentityUserService<T extends IdentityUser.Model ? T : IdentityUser.Model>
-  >(setting: AuthenticateSetting): DynamicModule {
+  static forRoot<T extends IdentityUser.Model = IdentityUser.Model>(setting: AuthenticateSetting): DynamicModule {
     const MODULES = [
       JwtModule.registerAsync({
         imports:    [ConfigModule],
