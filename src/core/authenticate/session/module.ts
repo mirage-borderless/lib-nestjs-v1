@@ -1,5 +1,6 @@
-import { DynamicModule, Provider }           from '@nestjs/common'
-import { JwtModule, JwtService }             from '@nestjs/jwt'
+import { DynamicModule, Provider }     from '@nestjs/common'
+import { ConfigModule, ConfigService } from '@nestjs/config'
+import { JwtModule, JwtService }       from '@nestjs/jwt'
 import { PassportModule }                    from '@nestjs/passport'
 import { ToastModule, ToastService }         from '../../../util'
 import { IdentityUser, IdentityUserService } from '../../database'
@@ -29,18 +30,21 @@ export class AuthenticateModule {
         defaultStrategy: 'cookie-session',
         property:        'user'
       }),
-      ToastModule
+      ToastModule,
+      ConfigModule
     ]
 
+    // TODO: add MIRAGE_CRYPTO_PUBLIC_KEY, MIRAGE_CRYPTO_PRIVATE_KEY to config
     const PROVIDERS: Provider[] = [
       {
         provide:     AuthenticateService<T>,
-        inject:     [IdentityUserService, JwtService, ToastService],
+        inject:     [IdentityUserService, JwtService, ToastService, ConfigService],
         useFactory: (
-          userService: IdentityUserService<T>,
-          jwt:         JwtService,
-          toast:       ToastService
-        ) => new AuthenticateService<T>(config.enableToast === true ? toast : undefined, userService, jwt)
+          userService:   IdentityUserService<T>,
+          jwt:           JwtService,
+          toast:         ToastService,
+          configService: ConfigService
+        ) => new AuthenticateService<T>(config.enableToast === true ? toast : undefined, userService, jwt, configService)
       }
     ]
     return {

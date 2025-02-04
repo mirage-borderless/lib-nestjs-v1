@@ -1,5 +1,6 @@
 import { createParamDecorator, ExecutionContext, HttpStatus, NotImplementedException, Type } from '@nestjs/common'
 import { ROUTE_ARGS_METADATA }                                                               from '@nestjs/common/constants'
+import { ConfigService }                                                                     from '@nestjs/config'
 
 import { Reflector }                         from '@nestjs/core'
 import { ClassConstructor, plainToInstance } from 'class-transformer'
@@ -145,12 +146,18 @@ export const FormBody = createParamDecorator(__formBodyFn)
 
 const __cookieValueFn = async <T>(key: string, ctx: ExecutionContext) => {
   const request = ctx.switchToHttp().getRequest<FastifyRequest>()
+  const config  = request.backend().get(ConfigService<any>)
   const raw     = request.cookies[key] || ''
   const ctor    = detectTypeofParam<T>(ctx)
   if (!raw || raw.trim() === '') { return plainToInstance(ctor, {}) }
-  const decrypt  = await FunctionStatic.decrypt(raw)
-  return plainToInstance(ctor, decrypt) as ClassConstructor<T>
+  if (config.get<boolean>('MIRAGE_AUTHENTICATE_PASSPORT_JWT_ENCRYPTED', false)) {
+    const privateKey = config.get<string>('MIRAGE_CRYPTO_PRIVATE_KEY')
+    const decrypt    = await FunctionStatic.decrypt(raw, privateKey)
+    return plainToInstance(ctor, decrypt) as ClassConstructor<T>
+  }
+  return plainToInstance(ctor, raw) as ClassConstructor<T>
 }
+
 /**
  * @example
  * ```typescript
