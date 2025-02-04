@@ -39,7 +39,9 @@ export class SessionStrategy extends PassportStrategy(Strategy as any, 'cookie-s
       }
       configService.get<boolean>('MIRAGE_AUTHENTICATE_PASSPORT_JWT_ENCRYPT_ENABLE', false)
         ? FunctionStatic
-          .decrypt(jwtDecoded.data, configService.get('MIRAGE_CRYPTO_PRIVATE_KEY'))
+          .decrypt(jwtDecoded.data, configService.get('MIRAGE_CRYPTO_PRIVATE_KEY'), function (e) {
+            done(new UnauthorizedException(ErrorMessage.NOTICE.reSignIn))
+          })
           .then(transform)
         : transform(jwtDecoded.data)
     })

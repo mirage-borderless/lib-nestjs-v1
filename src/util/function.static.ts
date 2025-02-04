@@ -1,16 +1,17 @@
-import * as crypto         from 'crypto'
-import { JWE, JWK, parse } from 'node-jose'
+import { InternalServerErrorException } from '@nestjs/common'
+import * as crypto                      from 'crypto'
+import { JWE, JWK, parse }              from 'node-jose'
 
 export class FunctionStatic {
 
   static  async encrypt(
-    raw:         any,
-    _publicKey: string = '',
-    format:      "general" | "compact" | "flattened" | undefined = 'compact',
-    contentAlg = "A256GCM",
-    alg        = "RSA-OAEP",
+    raw:          any,
+    _publicKey:   string,
+    format:      'general' | 'compact' | 'flattened' | undefined = 'compact',
+    contentAlg = 'A256GCM',
+    alg        = 'RSA-OAEP',
   ) {
-    const publicKey = await JWK.asKey(_publicKey, "pem")
+    const publicKey = await JWK.asKey(_publicKey, 'pem')
     const buffer    = Buffer.from(JSON.stringify(raw))
     return await JWE.createEncrypt({
       format,
@@ -29,11 +30,16 @@ export class FunctionStatic {
     return input.replace(/[^\w\s\-_]/ug, '')
   }
 
-  static async decrypt(encryptedBody: string, _privateKey: string) {
+  static async decrypt(encryptedBody: string, _privateKey: string, onError: Function = null) {
     const keystore = JWK.createKeyStore()
     await keystore.add(await JWK.asKey(_privateKey, 'pem'))
     const outPut       = parse.compact(encryptedBody)
-    const decryptedVal = await outPut.perform(keystore) as JWE.DecryptResult
-    return Buffer.from(decryptedVal.plaintext).toString()
+    const decryptedVal = (await outPut.perform(keystore).catch(e => {
+      if (!!onError) onError(e)
+    })) as JWE.DecryptResult
+    if (!!decryptedVal) {
+      return Buffer.from(decryptedVal.plaintext).toString()
+    }
+    if (!!onError) onError()
   }
 }

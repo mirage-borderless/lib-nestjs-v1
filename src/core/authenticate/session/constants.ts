@@ -9,6 +9,10 @@ export namespace ErrorMessage {
     unauthorized: 'authenticate.alert.unauthorized'
   }
 
+  export const NOTICE = {
+    reSignIn: 'authenticate.notice.please_re_login'
+  }
+
   export const SIGN_IN = {
     wrongPass:    'authenticate.sign_in.wrong_pass',
     notExistUser: 'authenticate.sign_in.not_exist_user'
