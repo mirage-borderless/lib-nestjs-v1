@@ -6,25 +6,13 @@ import { ExtractJwt, Strategy, VerifiedCallback } from 'passport-jwt'
 import { FunctionStatic }                         from '../../../util'
 import { IdentityUser }                           from '../../database'
 import { CookieKeys, ErrorMessage }               from './constants'
-import * as crypto                                from 'crypto'
 
 @Injectable()
 export class SessionStrategy extends PassportStrategy(Strategy as any, 'cookie-session', true) {
 
-  private privateKey: string
-  private publicKey:  string
-
   constructor(
     private readonly configService: ConfigService
   ) {
-    crypto.generateKeyPair('rsa', {
-      modulusLength:        2048,
-      publicKeyEncoding:  { type: 'spki',  format: 'pem' },
-      privateKeyEncoding: { type: 'pkcs8', format: 'pem' }
-    }, (err: Error | null, publicKey: string, privateKey: string) => {
-      this.privateKey = privateKey
-      this.publicKey  = publicKey
-    })
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([(req) => req.cookies[CookieKeys.AUTHORIZATION]]),
       secretOrKey:        configService.get<string>('MIRAGE_AUTHENTICATE_PASSPORT_JWT_SECRET', 'secret'),
@@ -49,7 +37,7 @@ export class SessionStrategy extends PassportStrategy(Strategy as any, 'cookie-s
           done(new UnauthorizedException(ErrorMessage.ALERT.invalidToken))
         }
       }
-      configService.get<boolean>('MIRAGE_AUTHENTICATE_PASSPORT_JWT_ENCRYPTED', false)
+      configService.get<boolean>('MIRAGE_AUTHENTICATE_PASSPORT_JWT_ENCRYPT_ENABLE', false)
         ? FunctionStatic
           .decrypt(jwtDecoded.data, configService.get('MIRAGE_CRYPTO_PRIVATE_KEY'))
           .then(transform)

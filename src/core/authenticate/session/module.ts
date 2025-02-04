@@ -1,14 +1,17 @@
-import { DynamicModule, Provider }     from '@nestjs/common'
-import { ConfigModule, ConfigService } from '@nestjs/config'
-import { JwtModule, JwtService }       from '@nestjs/jwt'
+import { DynamicModule, Provider }           from '@nestjs/common'
+import { ConfigModule, ConfigService }       from '@nestjs/config'
+import { JwtModule, JwtService }             from '@nestjs/jwt'
 import { PassportModule }                    from '@nestjs/passport'
+import crypto                                from 'crypto'
 import { ToastModule, ToastService }         from '../../../util'
 import { IdentityUser, IdentityUserService } from '../../database'
 import { AuthenticateService }               from './service'
 import { SessionStrategy }                   from './strategy'
 
-export type AuthenticateWithNotification    = { enableToast: true  }
-export type AuthenticateWithoutNotification = { enableToast: false }
+type WithNotification    = { enableToast: true  }
+type WithoutNotification = { enableToast: false }
+
+type AuthenticateSetting = { enableEncrypt: boolean } & (WithNotification | WithoutNotification)
 
 export class AuthenticateModule {
 
@@ -16,14 +19,16 @@ export class AuthenticateModule {
     T extends IdentityUser.Model = IdentityUser.Model,
     U extends IdentityUserService<T extends IdentityUser.Model ? T : IdentityUser.Model>
             = IdentityUserService<T extends IdentityUser.Model ? T : IdentityUser.Model>
-  >(
-    config: AuthenticateWithNotification | AuthenticateWithoutNotification
-  ): DynamicModule {
+  >(setting: AuthenticateSetting): DynamicModule {
     const MODULES = [
-      JwtModule.register({
-        secret:       'secret',
-        signOptions: { expiresIn: '1h' },
-        global:        true
+      JwtModule.registerAsync({
+        imports:    [ConfigModule],
+        inject:     [ConfigService],
+        useFactory: (configService: ConfigService) => ({
+          secret:        configService.get<string>('MIRAGE_AUTHENTICATE_PASSPORT_JWT_SECRET', 'secret'),
+          signOptions: { expiresIn: '1h' },
+          global:        true
+        })
       }),
       PassportModule.register({
         session:          true,
@@ -34,7 +39,6 @@ export class AuthenticateModule {
       ConfigModule
     ]
 
-    // TODO: add MIRAGE_CRYPTO_PUBLIC_KEY, MIRAGE_CRYPTO_PRIVATE_KEY to config
     const PROVIDERS: Provider[] = [
       {
         provide:     AuthenticateService<T>,
@@ -44,7 +48,82 @@ export class AuthenticateModule {
           jwt:           JwtService,
           toast:         ToastService,
           configService: ConfigService
-        ) => new AuthenticateService<T>(config.enableToast === true ? toast : undefined, userService, jwt, configService)
+        ) => {
+          if (setting.enableEncrypt === true) {
+            configService.set<boolean>('MIRAGE_AUTHENTICATE_PASSPORT_JWT_ENCRYPT_ENABLE', true)
+            crypto.generateKeyPair('rsa', {
+              modulusLength:        2048,
+              publicKeyEncoding:  { type: 'spki',  format: 'pem' },
+              privateKeyEncoding: { type: 'pkcs8', format: 'pem' }
+            }, (err: Error | null, publicKey: string, privateKey: string) => {
+              configService.set<string>('MIRAGE_CRYPTO_PUBLIC_KEY',   publicKey)
+              configService.set<string>('MIRAGE_CRYPTO_PRIVATE_KEY', privateKey)
+            })
+          }
+          return new AuthenticateService<T>(
+            setting.enableToast === true ? toast : undefined,
+            userService,
+            jwt,
+            configService
+          )
+        }
+      }
+    ]
+    return {
+      imports:    MODULES,
+      module:     this,
+      providers: [...PROVIDERS, SessionStrategy],
+      exports:   [...MODULES, ...PROVIDERS]
+    }
+  }
+
+  static forTest(setting: AuthenticateSetting): DynamicModule {
+    const MODULES = [
+      JwtModule.registerAsync({
+        imports:    [ConfigModule],
+        inject:     [ConfigService],
+        useFactory: (configService: ConfigService) => ({
+          secret:        configService.get<string>('MIRAGE_AUTHENTICATE_PASSPORT_JWT_SECRET', 'secret'),
+          signOptions: { expiresIn: '1h' },
+          global:        true
+        })
+      }),
+      PassportModule.register({
+        session:          true,
+        defaultStrategy: 'cookie-session',
+        property:        'user'
+      }),
+      ToastModule,
+      ConfigModule
+    ]
+
+    const PROVIDERS: Provider[] = [
+      {
+        provide:     AuthenticateService,
+        inject:     [JwtService, ToastService, ConfigService],
+        useFactory: (
+                       jwt:           JwtService,
+                       toast:         ToastService,
+                       configService: ConfigService
+                     ) => {
+          if (setting.enableEncrypt === true) {
+            configService.set<boolean>('MIRAGE_AUTHENTICATE_PASSPORT_JWT_ENCRYPT_ENABLE', true)
+            crypto.generateKeyPair('rsa', {
+              modulusLength:        2048,
+              publicKeyEncoding:  { type: 'spki',  format: 'pem' },
+              privateKeyEncoding: { type: 'pkcs8', format: 'pem' }
+            }, (err: Error | null, publicKey: string, privateKey: string) => {
+              configService.set<string>('MIRAGE_CRYPTO_PUBLIC_KEY',   publicKey)
+              configService.set<string>('MIRAGE_CRYPTO_PRIVATE_KEY', privateKey)
+            })
+          }
+          return new AuthenticateService(
+            setting.enableToast === true ? toast : undefined,
+            null,
+            jwt,
+            configService
+          )
+        }
       }
     ]
     return {

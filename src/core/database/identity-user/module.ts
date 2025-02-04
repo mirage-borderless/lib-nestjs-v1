@@ -29,7 +29,7 @@ export class IdentityUserDatabaseModule {
     U extends IdentityUserService<T extends IdentityUser.Model ? T : IdentityUser.Model>
             = IdentityUserService<T extends IdentityUser.Model ? T : IdentityUser.Model>
   >(
-    register: {
+    setting: {
       /**
        * User table, user service
        * */
@@ -37,13 +37,20 @@ export class IdentityUserDatabaseModule {
       /**
        * Other tables in database identity
        * */
-      tables?:       Function[],
-      authenticate: 'jwt' | 'session'
+      tables?:   Function[],
+      /**
+       * Authenticate strategy by jwt or cookie session
+       */
+      strategy: 'jwt' | 'session',
+      /**
+       * Enable encrypt, using encrypto library
+       */
+      encrypt?:  boolean
     }
   ): DynamicModule {
-    const userTableSetting = typeof register.user !== 'function' ? register.user : {
+    const userTableSetting = typeof setting.user !== 'function' ? setting.user : {
       service: IdentityUserService.instance,
-      table:   register.user
+      table:   setting.user
     }
 
     function createTypeOrmOptions(dsn: 'master') {
@@ -53,11 +60,11 @@ export class IdentityUserDatabaseModule {
           name:        dsn === 'master' ? undefined : dsn,
           logging:   ['error', 'query', 'log'],
           host:        process.env.NODE_ENV === 'development' ? 'localhost' : configService.get('MIRAGE_MSSQL_DATABASE_IDENTITY_USER', 'localhost'),
-          port:        process.env.NODE_ENV === 'development' ? parseInt(configService.get('MIRAGE_MSSQL_DATABASE_IDENTITY_USER_EXPOSE_PORT')) : 1433,
+          port:        process.env.NODE_ENV === 'development' ?      parseInt(configService.get('MIRAGE_MSSQL_DATABASE_IDENTITY_USER_EXPOSE_PORT')) : 1433,
           username:   'sa',
           password:    configService.get('MIRAGE_MSSQL_CONFIG_SA_PASSWORD', ''),
           database:    configService.get('MIRAGE_MSSQL_DATABASE_IDENTITY_USER', 'identity_user'),
-          entities:   [...register.tables, userTableSetting.table],
+          entities:   [...setting.tables, userTableSetting.table],
           synchronize: dsn === 'master',
           options: {
             trustServerCertificate: true,
@@ -69,8 +76,10 @@ export class IdentityUserDatabaseModule {
     }
     const MODULES = [
       TypeOrmModule.forRootAsync(createTypeOrmOptions('master')),
-      TypeOrmModule.forFeature([...register.tables, userTableSetting.table]),
-      register.authenticate === 'session' ? session.AuthenticateModule.forRoot({ enableToast: true }) : jwt.AuthenticateModule
+      TypeOrmModule.forFeature([...setting.tables, userTableSetting.table]),
+      setting.strategy === 'session'
+        ? session.AuthenticateModule.forRoot({ enableToast: true, enableEncrypt: setting.encrypt === true })
+        : jwt.AuthenticateModule
     ]
     const PROVIDERS: Provider[] = [
       {

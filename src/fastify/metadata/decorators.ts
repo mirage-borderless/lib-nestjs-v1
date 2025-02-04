@@ -150,7 +150,7 @@ const __cookieValueFn = async <T>(key: string, ctx: ExecutionContext) => {
   const raw     = request.cookies[key] || ''
   const ctor    = detectTypeofParam<T>(ctx)
   if (!raw || raw.trim() === '') { return plainToInstance(ctor, {}) }
-  if (config.get<boolean>('MIRAGE_AUTHENTICATE_PASSPORT_JWT_ENCRYPTED', false)) {
+  if (config.get<boolean>('MIRAGE_AUTHENTICATE_PASSPORT_JWT_ENCRYPT_ENABLE', false)) {
     const privateKey = config.get<string>('MIRAGE_CRYPTO_PRIVATE_KEY')
     const decrypt    = await FunctionStatic.decrypt(raw, privateKey)
     return plainToInstance(ctor, decrypt) as ClassConstructor<T>

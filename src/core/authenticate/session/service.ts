@@ -29,7 +29,7 @@ export class AuthenticateService<T extends IdentityUser.Model = IdentityUser.Mod
         }
         return {
           token: this.jwtService.sign({
-            data: this.configService.get<boolean>('MIRAGE_AUTHENTICATE_PASSPORT_JWT_ENCRYPTED', false)
+            data: this.configService.get<boolean>('MIRAGE_AUTHENTICATE_PASSPORT_JWT_ENCRYPT_ENABLE', false)
               ? await FunctionStatic.encrypt(jwtUserSign, this.configService.get<string>('MIRAGE_CRYPTO_PUBLIC_KEY'))
               : jwtUserSign
           }),
@@ -47,7 +47,7 @@ export class AuthenticateService<T extends IdentityUser.Model = IdentityUser.Mod
     }
     return {
       token: this.jwtService.sign({
-        data: this.configService.get<boolean>('MIRAGE_AUTHENTICATE_PASSPORT_JWT_ENCRYPTED', false)
+        data: this.configService.get<boolean>('MIRAGE_AUTHENTICATE_PASSPORT_JWT_ENCRYPT_ENABLE', false)
           ? await FunctionStatic.encrypt(user, this.configService.get<string>('MIRAGE_CRYPTO_PUBLIC_KEY'))
           : JSON.stringify(user)
       }),
