@@ -1,6 +1,0 @@
-export * from './conf/database/entity/identity-user.entity'
-export * from './conf/database/service/_module'
-export * from './conf/database/service/identity-user.service'
-export * from './jwt/_module'
-export * from './jwt/jwt.service'
-export * from './jwt/jwt.guard'
