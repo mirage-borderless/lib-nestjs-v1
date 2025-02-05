@@ -4,7 +4,7 @@ import { ConfigModule, ConfigService }                                  from '@n
 import { getRepositoryToken, TypeOrmModule, TypeOrmModuleAsyncOptions } from '@nestjs/typeorm'
 import * as process                                                     from 'process'
 import { Repository }                                                   from 'typeorm'
-import { jwt, session }                                                 from '../../authenticate'
+import { AuthenticateModule }                                           from '../../authenticate'
 import { IdentityUser, IdentityUserService }                            from '../identity-user'
 
 type ModifyUserTableWithService<
@@ -41,7 +41,7 @@ export class IdentityUserDatabaseModule {
       /**
        * Authenticate strategy by jwt or cookie session
        */
-      strategy: 'jwt' | 'session',
+      strategy: 'jwt' | 'cookie-session',
       /**
        * Enable encrypt, using encrypto library
        */
@@ -77,9 +77,11 @@ export class IdentityUserDatabaseModule {
     const MODULES = [
       TypeOrmModule.forRootAsync(createTypeOrmOptions('master')),
       TypeOrmModule.forFeature([...setting.tables, userTableSetting.table]),
-      setting.strategy === 'session'
-        ? session.AuthenticateModule.forRoot({ enableToast: true, enableEncrypt: setting.encrypt === true })
-        : jwt.AuthenticateModule
+      AuthenticateModule.forRoot({
+        enableToast:   true,
+        enableEncrypt: setting.encrypt === true,
+        strategy:      setting.strategy
+      })
     ]
     const PROVIDERS: Provider[] = [
       {

@@ -2,9 +2,9 @@ import { forwardRef, Inject, Injectable, Optional, UnauthorizedException } from 
 import { ConfigService }                                                   from '@nestjs/config'
 import { JwtService }                                                      from '@nestjs/jwt'
 import { hash }                                                            from 'typeorm/util/StringUtils'
-import { FunctionStatic }                                                  from '../../../util'
-import { ToastService }                                                    from '../../../util/notify'
-import { IdentityUser, IdentityUserService }                               from '../../database'
+import { FunctionStatic }                                                  from '../../util'
+import { ToastService }                                                    from '../../util/notify'
+import { IdentityUser, IdentityUserService }                               from '../database'
 import { ErrorMessage }                                                    from './constants'
 
 @Injectable()

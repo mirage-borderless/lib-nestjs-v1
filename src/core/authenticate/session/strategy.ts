@@ -1,11 +1,11 @@
 import { forwardRef, Inject, Injectable, UnauthorizedException } from '@nestjs/common'
 import { ConfigService }                                         from '@nestjs/config'
-import { PassportStrategy }                       from '@nestjs/passport'
-import { plainToInstance }                        from 'class-transformer'
-import { ExtractJwt, Strategy, VerifiedCallback } from 'passport-jwt'
-import { FunctionStatic }                         from '../../../util'
-import { IdentityUser, IdentityUserService }      from '../../database'
-import { CookieKeys, ErrorMessage }               from './constants'
+import { PassportStrategy }                                      from '@nestjs/passport'
+import { plainToInstance }                                       from 'class-transformer'
+import { ExtractJwt, Strategy, VerifiedCallback }                from 'passport-jwt'
+import { FunctionStatic }                                        from '../../../util'
+import { IdentityUser, IdentityUserService }                     from '../../database'
+import { CookieKeys, ErrorMessage }                              from '../constants'
 
 @Injectable()
 export class SessionStrategy extends PassportStrategy(Strategy as any, 'cookie-session', true) {
@@ -16,10 +16,10 @@ export class SessionStrategy extends PassportStrategy(Strategy as any, 'cookie-s
     readonly userService:    IdentityUserService,
   ) {
     super({
-      jwtFromRequest: ExtractJwt.fromExtractors([(req) => req.cookies[CookieKeys.AUTHORIZATION]]),
-      secretOrKey:        configService.get<string>('MIRAGE_AUTHENTICATE_PASSPORT_JWT_SECRET', 'secret'),
-      passReqToCallback:  true,
-      ignoreExpiration:   false
+      jwtFromRequest:    ExtractJwt.fromExtractors([(req) => req.cookies[CookieKeys.AUTHORIZATION]]),
+      secretOrKey:       configService.get<string>('MIRAGE_AUTHENTICATE_PASSPORT_JWT_SECRET', 'secret'),
+      passReqToCallback: true,
+      ignoreExpiration:  false
     }, (
       request:    FastifyRequest,
       jwtDecoded: { data: string, iat: number, exp: number },

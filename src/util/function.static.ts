@@ -1,10 +1,9 @@
-import { InternalServerErrorException } from '@nestjs/common'
-import * as crypto                      from 'crypto'
-import { JWE, JWK, parse }              from 'node-jose'
+import * as crypto         from 'crypto'
+import { JWE, JWK, parse } from 'node-jose'
 
 export class FunctionStatic {
 
-  static  async encrypt(
+  static async encrypt(
     raw:          any,
     _publicKey:   string,
     format:      'general' | 'compact' | 'flattened' | undefined = 'compact',
