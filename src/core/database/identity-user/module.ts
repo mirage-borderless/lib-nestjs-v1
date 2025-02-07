@@ -5,7 +5,7 @@ import { getRepositoryToken, TypeOrmModule, TypeOrmModuleAsyncOptions } from '@n
 import * as process                                                     from 'process'
 import { Repository }                                                   from 'typeorm'
 import { AuthenticateModule }                                           from '../../authenticate'
-import { IdentityUser, IdentityUserService }                            from '../identity-user'
+import { IdentityUser, IdentityUserService, Keypair }                   from '../identity-user'
 
 type ModifyUserTableWithService<
   T extends IdentityUser.Model = IdentityUser.Model,
@@ -64,7 +64,7 @@ export class IdentityUserDatabaseModule {
           username:   'sa',
           password:    configService.get('MIRAGE_MSSQL_CONFIG_SA_PASSWORD', ''),
           database:    configService.get('MIRAGE_MSSQL_DATABASE_IDENTITY_USER', 'identity_user'),
-          entities:   [...setting.tables, userTableSetting.table],
+          entities:   [...setting.tables, userTableSetting.table, Keypair.Model],
           synchronize: dsn === 'master',
           options: {
             trustServerCertificate: true,
@@ -76,7 +76,7 @@ export class IdentityUserDatabaseModule {
     }
     const MODULES = [
       TypeOrmModule.forRootAsync(createTypeOrmOptions('master')),
-      TypeOrmModule.forFeature([...setting.tables, userTableSetting.table]),
+      TypeOrmModule.forFeature([...setting.tables, userTableSetting.table, Keypair.Model]),
       AuthenticateModule.forRoot({
         enableToast:   true,
         enableEncrypt: setting.encrypt === true,

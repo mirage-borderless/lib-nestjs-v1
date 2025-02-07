@@ -40,7 +40,7 @@ export class AuthenticateModule {
       {
         provide:     AuthenticateService<T>,
         inject:     [IdentityUserService, JwtService, ToastService, ConfigService],
-        useFactory: (
+        useFactory: async (
           userService:   IdentityUserService<T>,
           jwt:           JwtService,
           toast:         ToastService,
@@ -48,14 +48,9 @@ export class AuthenticateModule {
         ) => {
           if (setting.enableEncrypt === true) {
             configService.set<boolean>('MIRAGE_AUTHENTICATE_PASSPORT_JWT_ENCRYPT_ENABLE', true)
-            crypto.generateKeyPair('rsa', {
-              modulusLength:        2048,
-              publicKeyEncoding:  { type: 'spki',  format: 'pem' },
-              privateKeyEncoding: { type: 'pkcs8', format: 'pem' }
-            }, (err: Error | null, publicKey: string, privateKey: string) => {
-              configService.set<string>('MIRAGE_CRYPTO_PUBLIC_KEY',   publicKey)
-              configService.set<string>('MIRAGE_CRYPTO_PRIVATE_KEY', privateKey)
-            })
+            const keypair = await userService.getKeyPair()
+            configService.set<string>('MIRAGE_CRYPTO_PUBLIC_KEY',  keypair.publicKey)
+            configService.set<string>('MIRAGE_CRYPTO_PRIVATE_KEY', keypair.privateKey)
           }
           return new AuthenticateService<T>(
             setting.enableToast === true ? toast : undefined,
