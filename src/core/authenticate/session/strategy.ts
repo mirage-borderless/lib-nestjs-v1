@@ -1,26 +1,30 @@
-import { forwardRef, Inject, Injectable, UnauthorizedException } from '@nestjs/common'
-import { ConfigService }                                         from '@nestjs/config'
-import { PassportStrategy }                                      from '@nestjs/passport'
-import { plainToInstance }                                       from 'class-transformer'
-import { ExtractJwt, Strategy, VerifiedCallback }                from 'passport-jwt'
-import { FunctionStatic }                                        from '../../../util'
-import { IdentityUser, IdentityUserService }                     from '../../database'
-import { CookieKeys, ErrorMessage }                              from '../constants'
+import { forwardRef, Inject, Injectable, UnauthorizedException }      from '@nestjs/common'
+import { ConfigService }                                              from '@nestjs/config'
+import { PassportStrategy }                                           from '@nestjs/passport'
+import { plainToInstance }                                            from 'class-transformer'
+import { ExtractJwt, Strategy, VerifiedCallback }                     from 'passport-jwt'
+import { FunctionStatic }                                             from '../../../util'
+import { IdentityUser, IdentityUserService, Keypair, KeypairService } from '../../database'
+import { CookieKeys, ErrorMessage }                                   from '../constants'
 
 @Injectable()
 export class SessionStrategy extends PassportStrategy(Strategy as any, 'cookie-session', true) {
+
+  private keypair: Keypair.Model
 
   constructor(
     readonly configService: ConfigService,
     @Inject(forwardRef(() => IdentityUserService))
     readonly userService:    IdentityUserService,
+    @Inject(forwardRef(() => KeypairService))
+    private readonly keypairService: KeypairService
   ) {
     super({
       jwtFromRequest:    ExtractJwt.fromExtractors([(req) => req.cookies[CookieKeys.AUTHORIZATION]]),
       secretOrKey:       configService.get<string>('MIRAGE_AUTHENTICATE_PASSPORT_JWT_SECRET', 'secret'),
       passReqToCallback: true,
       ignoreExpiration:  false
-    }, (
+    }, async (
       request:    FastifyRequest,
       jwtDecoded: { data: string, iat: number, exp: number },
       done:       VerifiedCallback
@@ -39,13 +43,14 @@ export class SessionStrategy extends PassportStrategy(Strategy as any, 'cookie-s
           done(new UnauthorizedException(ErrorMessage.ALERT.invalidToken))
         }
       }
-      configService.get<boolean>('MIRAGE_AUTHENTICATE_PASSPORT_JWT_ENCRYPT_ENABLE', false)
-        ? FunctionStatic
-          .decrypt(jwtDecoded.data, configService.get('MIRAGE_CRYPTO_PRIVATE_KEY'), function (e) {
+      if (configService.get<boolean>('MIRAGE_AUTHENTICATE_PASSPORT_JWT_ENCRYPT_ENABLE', false)) {
+        this.keypair = this.keypair ?? await this.keypairService.get()
+        FunctionStatic
+          .decrypt(jwtDecoded.data, this.keypair.privateKey, function (e) {
             done(new UnauthorizedException(ErrorMessage.NOTICE.reSignIn))
           })
           .then(transform)
-        : transform(jwtDecoded.data)
+      } else await transform(jwtDecoded.data)
     })
   }
 

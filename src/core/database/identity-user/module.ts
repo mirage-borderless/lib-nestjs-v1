@@ -3,6 +3,7 @@ import { Constructor }                                                  from '@n
 import { ConfigModule, ConfigService }                                  from '@nestjs/config'
 import { getRepositoryToken, TypeOrmModule, TypeOrmModuleAsyncOptions } from '@nestjs/typeorm'
 import * as process                                                     from 'process'
+import { KeypairService }                                               from './keypair.service'
 import { Repository }                                                   from 'typeorm'
 import { AuthenticateModule }                                           from '../../authenticate'
 import { IdentityUser, IdentityUserService, Keypair }                   from '../identity-user'
@@ -92,7 +93,8 @@ export class IdentityUserDatabaseModule {
       {
         provide:     IdentityUserService,
         useExisting: userTableSetting.service
-      }
+      },
+      KeypairService
     ]
     return {
       module:     this,

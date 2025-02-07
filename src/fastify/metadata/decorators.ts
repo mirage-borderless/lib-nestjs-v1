@@ -1,10 +1,11 @@
 import { createParamDecorator, ExecutionContext, HttpStatus, NotImplementedException, Type, UnauthorizedException } from '@nestjs/common'
 import { ROUTE_ARGS_METADATA }                                                                                      from '@nestjs/common/constants'
-import { ConfigService }                                                                     from '@nestjs/config'
+import { ConfigService }                                                                                            from '@nestjs/config'
 
 import { Reflector }                         from '@nestjs/core'
 import { ClassConstructor, plainToInstance } from 'class-transformer'
 import { validate }                          from 'class-validator'
+import { KeypairService }                    from '../../core/database/identity-user/keypair.service'
 import { IdentityUser }                      from '../../core'
 import { FunctionStatic }                    from '../../util'
 
@@ -152,8 +153,9 @@ const __cookieValueFn = async <T>(key: string, ctx: ExecutionContext) => {
   const ctor    = detectTypeofParam<T>(ctx)
   if (!raw || raw.trim() === '') { return plainToInstance(ctor, {}) }
   if (config.get<boolean>('MIRAGE_AUTHENTICATE_PASSPORT_JWT_ENCRYPT_ENABLE', false)) {
-    const privateKey = config.get<string>('MIRAGE_CRYPTO_PRIVATE_KEY')
-    const decrypt    = await FunctionStatic.decrypt(raw, privateKey, function (e) {
+    const keypairService = request.backend().get(KeypairService)
+    const keypair = await keypairService.get()
+    const decrypt = await FunctionStatic.decrypt(raw, keypair.privateKey, function (e) {
       response.clearCookie(key)
       throw new UnauthorizedException()
     })

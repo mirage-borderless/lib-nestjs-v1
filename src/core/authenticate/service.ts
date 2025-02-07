@@ -4,7 +4,7 @@ import { JwtService }                                                      from 
 import { hash }                                                            from 'typeorm/util/StringUtils'
 import { FunctionStatic }                                                  from '../../util'
 import { ToastService }                                                    from '../../util/notify'
-import { IdentityUser, IdentityUserService }                               from '../database'
+import { IdentityUser, IdentityUserService, KeypairService }               from '../database'
 import { ErrorMessage }                                                    from './constants'
 
 @Injectable()
@@ -14,9 +14,11 @@ export class AuthenticateService<T extends IdentityUser.Model = IdentityUser.Mod
     @Optional()
     private readonly toastService: ToastService,
     @Inject(forwardRef(() => IdentityUserService<T>))
-    private readonly userService:   IdentityUserService<T>,
-    private readonly jwtService:    JwtService,
-    private readonly configService: ConfigService
+    private readonly userService:    IdentityUserService<T>,
+    private readonly jwtService:     JwtService,
+    private readonly configService:  ConfigService,
+    @Inject(forwardRef(() => KeypairService))
+    private readonly keypairService: KeypairService
   ) { }
 
   async signIn(claim: Pick<IdentityUser.Model, 'username' | 'password'>) {
@@ -30,7 +32,7 @@ export class AuthenticateService<T extends IdentityUser.Model = IdentityUser.Mod
         return {
           token: this.jwtService.sign({
             data:                                         this.configService.get<boolean>('MIRAGE_AUTHENTICATE_PASSPORT_JWT_ENCRYPT_ENABLE', false)
-              ? await FunctionStatic.encrypt(jwtUserSign, this.configService.get<string>('MIRAGE_CRYPTO_PUBLIC_KEY'))
+              ? await FunctionStatic.encrypt(jwtUserSign, (await this.keypairService.get()).publicKey)
               : jwtUserSign
           }),
           data: jwtUserSign
@@ -48,7 +50,7 @@ export class AuthenticateService<T extends IdentityUser.Model = IdentityUser.Mod
     return {
       token: this.jwtService.sign({
         data:                                  this.configService.get<boolean>('MIRAGE_AUTHENTICATE_PASSPORT_JWT_ENCRYPT_ENABLE', false)
-          ? await FunctionStatic.encrypt(user, this.configService.get<string>('MIRAGE_CRYPTO_PUBLIC_KEY'))
+          ? await FunctionStatic.encrypt(user, (await this.keypairService.get()).publicKey)
           : user
       }),
       data: user

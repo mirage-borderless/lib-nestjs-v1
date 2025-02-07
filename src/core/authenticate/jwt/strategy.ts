@@ -3,24 +3,29 @@ import { ConfigService }                                         from '@nestjs/c
 import { PassportStrategy }                                      from '@nestjs/passport'
 import { plainToInstance }                                       from 'class-transformer'
 import { ExtractJwt, Strategy, VerifiedCallback }                from 'passport-jwt'
-import { ErrorMessage }                                          from '../constants'
-import { IdentityUser, IdentityUserService }                     from '../../database'
+import { KeypairService }                                        from '../../database'
 import { FunctionStatic }                                        from '../../../util'
+import { IdentityUser, IdentityUserService, Keypair }            from '../../database'
+import { ErrorMessage }                                          from '../constants'
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy as any, 'jwt', true) {
+
+  private keypair: Keypair.Model
 
   constructor(
     readonly configService: ConfigService,
     @Inject(forwardRef(() => IdentityUserService))
     readonly userService:    IdentityUserService,
+    @Inject(forwardRef(() => KeypairService))
+    private readonly keypairService: KeypairService
   ) {
     super({
       jwtFromRequest:    ExtractJwt.fromAuthHeaderAsBearerToken(),
       secretOrKey:       configService.get<string>('MIRAGE_AUTHENTICATE_PASSPORT_JWT_SECRET', 'secret'),
       passReqToCallback: true,
       ignoreExpiration:  false
-    }, (
+    }, async (
       request:    FastifyRequest,
       jwtDecoded: { data: string, iat: number, exp: number },
       done:       VerifiedCallback
@@ -39,13 +44,14 @@ export class JwtStrategy extends PassportStrategy(Strategy as any, 'jwt', true) 
           done(new UnauthorizedException(ErrorMessage.ALERT.invalidToken))
         }
       }
-      configService.get<boolean>('MIRAGE_AUTHENTICATE_PASSPORT_JWT_ENCRYPT_ENABLE', false)
-        ? FunctionStatic
-          .decrypt(jwtDecoded.data, configService.get('MIRAGE_CRYPTO_PRIVATE_KEY'), function (e) {
+      if (configService.get<boolean>('MIRAGE_AUTHENTICATE_PASSPORT_JWT_ENCRYPT_ENABLE', false)) {
+        this.keypair = this.keypair ?? await this.keypairService.get()
+        FunctionStatic
+          .decrypt(jwtDecoded.data, this.keypair.privateKey, function (e) {
             done(new UnauthorizedException(ErrorMessage.NOTICE.reSignIn))
           })
           .then(transform)
-        : transform(jwtDecoded.data)
+      } else await transform(jwtDecoded.data)
     })
   }
 

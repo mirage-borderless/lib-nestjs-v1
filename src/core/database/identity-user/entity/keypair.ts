@@ -1,14 +1,15 @@
-import { UUIDBaseEntity } from '../../entity/uuid.base-entity'
-import { Column, Entity } from 'typeorm'
+import { IncrementBaseEntity } from '../../entity/increment.base-entity'
+import { Column, Entity }      from 'typeorm'
 
 /**
  * Table user mặc định
  */
 export namespace Keypair {
-  export type Id = string & { readonly __brand: unique symbol }
+  export type  Id = number & { readonly __brand: unique symbol }
+  export const Id = (id: number) => id as Id
 
   @Entity('keypair')
-  class KeyPairTable extends UUIDBaseEntity<Keypair.Id> {
+  class KeyPairTable extends IncrementBaseEntity<Keypair.Id> {
     //~~~~~~~~~~~~~~
     //~~~[Column]~~~
     /* 1 */ @Column({ type: 'text' }) publicKey:  string
